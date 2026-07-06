@@ -117,7 +117,7 @@ export function PaginationDotsPanel({
             : "pointer-events-none opacity-0"
         }`}
       >
-        <div className="flex gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
           {pages.map((page) => (
             <Link
               key={page}
