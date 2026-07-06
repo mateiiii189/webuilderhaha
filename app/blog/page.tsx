@@ -4,6 +4,7 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { Container } from "@/components/layout/Container";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { PaginationDotsPanel } from "@/components/sections/PaginationDotsPanel";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -80,45 +81,6 @@ function getPaginationItems(currentPage: number, totalPages: number) {
   items.push(1, currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
 
   return items;
-}
-
-function PaginationDotsPanel({
-  currentPage,
-  totalPages,
-}: {
-  currentPage: number;
-  totalPages: number;
-}) {
-  const pages = Array.from({ length: totalPages }).map((_, index) => index + 1);
-
-  return (
-    <details className="group relative">
-      <summary
-        className="flex h-11 w-11 list-none items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-gray-400 transition duration-500 marker:hidden hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300 md:cursor-default [&::-webkit-details-marker]:hidden"
-        aria-label="Arată toate paginile"
-      >
-        ...
-      </summary>
-
-      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-[86vw] max-w-[620px] -translate-x-1/2 translate-y-2 rounded-[1.5rem] border border-white/10 bg-[#0B0F14]/95 p-3 opacity-0 shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-300 after:absolute after:left-0 after:top-full after:h-3 after:w-full after:content-[''] group-open:pointer-events-auto group-open:translate-y-0 group-open:opacity-100 md:w-auto md:min-w-[520px] md:group-hover:pointer-events-auto md:group-hover:translate-y-0 md:group-hover:opacity-100">
-        <div className="flex gap-2 overflow-x-auto pb-1 md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:pb-0">
-          {pages.map((page) => (
-            <Link
-              key={page}
-              href={page === 1 ? "/blog" : `/blog?page=${page}`}
-              className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border text-xs font-black transition duration-300 hover:-translate-y-0.5 ${
-                page === currentPage
-                  ? "border-amber-400 bg-amber-400 text-black"
-                  : "border-white/10 bg-white/[0.03] text-white hover:border-amber-400/40 hover:text-amber-300"
-              }`}
-            >
-              {page}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </details>
-  );
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
