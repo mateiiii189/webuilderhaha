@@ -328,19 +328,16 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                   <ol className="mt-6 space-y-4">
                     {toc.map((item, index) => (
-                      <li
-                        key={item.id}
-                        className={item.level === 3 ? "pl-5" : ""}
-                      >
+                      <li key={item.id}>
                         <a
                           href={`#${item.id}`}
-                          className="group flex items-start gap-4 text-[15px] leading-7 text-gray-300 transition duration-500 hover:translate-x-1 hover:text-white"
+                          className="group grid grid-cols-[30px_minmax(0,1fr)] gap-4 text-[15px] leading-7 text-gray-300 transition duration-500 hover:text-white"
                         >
-                          <span className="mt-[2px] min-w-5 font-semibold text-amber-400">
+                          <span className="font-semibold text-amber-400">
                             {index + 1}.
                           </span>
 
-                          <span className="transition duration-500 group-hover:text-amber-300">
+                          <span className="min-w-0 transition duration-500 group-hover:text-amber-300">
                             {item.title}
                           </span>
                         </a>
