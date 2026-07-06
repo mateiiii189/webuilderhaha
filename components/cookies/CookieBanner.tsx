@@ -123,6 +123,23 @@ export function CookieBanner() {
     }
   }, []);
 
+  useEffect(() => {
+    function openCookieSettings() {
+      setShowCookieButton(false);
+      setShowSettings(true);
+      setIsOpen(true);
+    }
+
+    window.addEventListener("webuilder-open-cookie-settings", openCookieSettings);
+
+    return () => {
+      window.removeEventListener(
+        "webuilder-open-cookie-settings",
+        openCookieSettings
+      );
+    };
+  }, []);
+
   function openBanner() {
     setShowCookieButton(false);
     setShowSettings(false);
@@ -133,6 +150,8 @@ export function CookieBanner() {
     setConsent(nextConsent);
     localStorage.setItem(CONSENT_KEY, JSON.stringify(nextConsent));
     updateGoogleConsent(nextConsent);
+
+    window.dispatchEvent(new Event("webuilder-cookie-consent-updated"));
 
     if (nextConsent.analytics || nextConsent.marketing) {
       setShouldLoadGtm(true);
@@ -194,11 +213,11 @@ export function CookieBanner() {
             animate="visible"
             exit="exit"
             transition={{
-            duration: 0.75,
-            ease: [0.16, 1, 0.3, 1],
+              duration: 0.75,
+              ease: [0.16, 1, 0.3, 1],
             }}
             onClick={openBanner}
-            className="fixed bottom-5 left-5 z-[60] rounded-full border border-white/10 bg-[#0B0F14] px-4 py-2 text-xs font-semibold text-white shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-amber-400/40 hover:text-amber-300"
+            className="fixed bottom-5 left-5 z-[60] rounded-full border border-white/10 bg-[#0B0F14] px-4 py-2 text-xs font-semibold text-white shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-amber-400/40 hover:text-amber-300"
           >
             Cookies
           </motion.button>
@@ -245,7 +264,7 @@ export function CookieBanner() {
               style={{
                 width: "100%",
               }}
-              className="mx-auto grid gap-6 overflow-visible rounded-3xl border border-white/10 bg-[#0B0F14] p-6 shadow-2xl shadow-black/50 backdrop-blur-xl transition duration-500 hover:border-amber-400/30 lg:grid-cols-[1fr_0.75fr] lg:items-center"
+              className="mx-auto grid gap-6 overflow-hidden rounded-3xl border border-white/10 bg-[#0B0F14] p-6 shadow-2xl shadow-black/50 backdrop-blur-xl transition duration-500 hover:border-amber-400/30 lg:grid-cols-[1fr_0.75fr] lg:items-center"
             >
               <motion.div layout>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-400">
@@ -281,18 +300,18 @@ export function CookieBanner() {
                 </p>
               </motion.div>
 
-                <motion.div
+              <motion.div
                 animate={{
-                    height: showSettings ? 380 : 152,
+                  height: showSettings ? 320 : 132,
                 }}
                 transition={{
-                    height: {
+                  height: {
                     duration: 0.65,
                     ease: [0.16, 1, 0.3, 1],
-                    },
+                  },
                 }}
-                className="overflow-visible"
-                >
+                className="overflow-visible py-1"
+              >
                 <AnimatePresence mode="wait" initial={false}>
                   {showSettings ? (
                     <motion.div
@@ -301,13 +320,13 @@ export function CookieBanner() {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                    transition={{
-                    duration: 0.35,
-                    ease: [0.16, 1, 0.3, 1],
-                    }}
-                      className="space-y-4"
+                      transition={{
+                        duration: 0.35,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      className="space-y-3"
                     >
-                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
+                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
                         <span>
                           <span className="block text-sm font-semibold text-white">
                             Necesare
@@ -326,7 +345,7 @@ export function CookieBanner() {
                         />
                       </label>
 
-                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
+                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
                         <span>
                           <span className="block text-sm font-semibold text-white">
                             Analiză
@@ -349,13 +368,14 @@ export function CookieBanner() {
                         />
                       </label>
 
-                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
+                      <label className="flex items-start justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/[0.05]">
                         <span>
                           <span className="block text-sm font-semibold text-white">
                             Marketing
                           </span>
                           <span className="mt-1 block text-xs leading-5 text-gray-400">
-                            Pentru Google Ads, conversii și remarketing.
+                            Pentru Google Ads, conversii, remarketing și embeduri
+                            social media precum Instagram/Facebook.
                           </span>
                         </span>
 
@@ -372,11 +392,11 @@ export function CookieBanner() {
                         />
                       </label>
 
-                      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                      <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:flex-wrap">
                         <button
                           type="button"
                           onClick={saveCustom}
-                          className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                          className="rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black transition duration-500 hover:-translate-y-0.5 hover:bg-amber-300"
                         >
                           Salvează preferințele
                         </button>
@@ -384,7 +404,7 @@ export function CookieBanner() {
                         <button
                           type="button"
                           onClick={rejectOptional}
-                          className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/10"
+                          className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/10"
                         >
                           Doar necesare
                         </button>
@@ -392,7 +412,7 @@ export function CookieBanner() {
                         <button
                           type="button"
                           onClick={() => setShowSettings(false)}
-                          className="rounded-full px-6 py-3 text-sm font-semibold text-gray-400 transition duration-300 hover:-translate-y-0.5 hover:text-white"
+                          className="rounded-full border border-white/10 px-5 py-2.5 text-sm font-semibold text-gray-300 transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/10 hover:text-white"
                         >
                           Înapoi
                         </button>
@@ -400,21 +420,21 @@ export function CookieBanner() {
                     </motion.div>
                   ) : (
                     <motion.div
-                    key="cookie-main"
-                    variants={viewVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    transition={{
+                      key="cookie-main"
+                      variants={viewVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      transition={{
                         duration: 0.35,
                         ease: [0.16, 1, 0.3, 1],
-                    }}
-                    className="flex flex-col gap-3"
+                      }}
+                      className="flex flex-col gap-3"
                     >
                       <button
                         type="button"
                         onClick={acceptAll}
-                        className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                        className="rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-black transition duration-500 hover:-translate-y-0.5 hover:bg-amber-300"
                       >
                         Accept toate
                       </button>
@@ -422,7 +442,7 @@ export function CookieBanner() {
                       <button
                         type="button"
                         onClick={() => setShowSettings(true)}
-                        className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/10"
+                        className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/30 hover:bg-white/10"
                       >
                         Setări cookies
                       </button>
@@ -430,7 +450,7 @@ export function CookieBanner() {
                       <button
                         type="button"
                         onClick={rejectOptional}
-                        className="rounded-full px-6 py-3 text-sm font-semibold text-gray-400 transition duration-300 hover:-translate-y-0.5 hover:text-white"
+                        className="rounded-full px-6 py-3 text-sm font-semibold text-gray-400 transition duration-500 hover:-translate-y-0.5 hover:text-white"
                       >
                         Refuz cookie-urile opționale
                       </button>

@@ -32,9 +32,9 @@ export function Footer() {
             </p>
 
             <div className="mt-6 text-sm leading-7 text-gray-400">
-              <p>NUME FIRMĂ SRL</p>
-              <p>CUI: RO________</p>
-              <p>Nr. Reg. Comerțului: J__/____/____</p>
+              <p>S.C. CLEARMILE LOGISTICS SRL </p>
+              <p>CUI: RO54942376</p>
+              <p>Nr. Reg. Comerțului: J2026039843001</p>
               <p>Email: {siteConfig.email}</p>
             </div>
           </div>

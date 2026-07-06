@@ -17,8 +17,8 @@ export default function PoliticaDeConfidentialitatePage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-white">1. Operatorul de date</h2>
         <p className="leading-8">
-          Operatorul datelor personale este NUME FIRMĂ SRL, cu sediul în ADRESĂ,
-          CUI RO________, e-mail contact@webuilder.ro.
+          Operatorul datelor personale este S.C. CLEARMILE LOGISTICS SRL, cu sediul în Aleea Mostiștea, Nr. 39A, București, Sector 3,
+          CUI RO54942376, e-mail contact@webuilder.ro.
         </p>
       </section>
 

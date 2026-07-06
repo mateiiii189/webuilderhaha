@@ -17,9 +17,9 @@ export default function TermeniSiConditiiPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-white">1. Informații generale</h2>
         <p className="leading-8">
-          Website-ul Webuilder.ro este administrat de NUME FIRMĂ SRL, persoană
-          juridică română, cu sediul social în ADRESĂ, înregistrată la Registrul
-          Comerțului cu nr. J__/____/____, CUI RO________.
+          Website-ul Webuilder.ro este administrat de S.C. CLEARMILE LOGISTICS SRL, persoană
+          juridică română, cu sediul social în Aleea Mostiștea, Nr. 39A, București, Sector 3, înregistrată la Registrul
+          Comerțului cu nr. J2026039843001, CUI RO54942376.
         </p>
         <p className="leading-8">
           Prin accesarea și utilizarea acestui website, utilizatorul acceptă

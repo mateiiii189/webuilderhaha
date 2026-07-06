@@ -4,6 +4,7 @@ import { ProblemSection } from "@/components/sections/ProblemSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { ProcessSection } from "@/components/sections/ProcessSection";
 import { PricingSection } from "@/components/sections/PricingSection";
+import { ReviewsSection } from "@/components/sections/ReviewsSection";
 import { FAQSection } from "@/components/sections/FAQSection";
 import { CTASection } from "@/components/sections/CTASection";
 
@@ -77,15 +78,27 @@ export default function Home() {
 
                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-400/80">
                       <svg
-                        viewBox="0 0 10 10"
-                        className="h-2 w-2 opacity-0 transition duration-300 group-hover/window:opacity-70"
+                        viewBox="0 0 12 12"
+                        className="h-2.5 w-2.5 opacity-0 transition duration-300 group-hover/window:opacity-70"
                         aria-hidden="true"
                       >
-                        <path
-                          d="M3 3H7V7H3V3Z"
+                        <rect
+                          x="3.2"
+                          y="4"
+                          width="5.2"
+                          height="5.2"
+                          rx="0.8"
                           stroke="currentColor"
-                          strokeWidth="1.4"
+                          strokeWidth="1.2"
                           fill="none"
+                          className="text-yellow-950"
+                        />
+                        <path
+                          d="M5 2.8H8.4C9.1 2.8 9.6 3.3 9.6 4V7.4"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          fill="none"
+                          strokeLinecap="round"
                           strokeLinejoin="round"
                           className="text-yellow-950"
                         />
@@ -176,7 +189,7 @@ export default function Home() {
       <ProblemSection />
       <ServicesSection />
       <ProcessSection />
-      <PricingSection />
+      <ReviewsSection />
       <FAQSection />
       <CTASection />
     </main>

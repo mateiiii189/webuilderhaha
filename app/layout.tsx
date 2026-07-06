@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/site";
+import { SiteShell } from "@/components/layout/SiteShell";
 import { GoogleConsent } from "@/components/cookies/GoogleConsent";
-import { CookieBanner } from "@/components/cookies/CookieBanner";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-main",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -29,13 +34,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ro">
+    <html lang="ro" className={inter.variable}>
       <body>
         <GoogleConsent />
-        <Navbar />
-        {children}
-        <Footer />
-        <CookieBanner />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );

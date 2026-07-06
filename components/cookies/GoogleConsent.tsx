@@ -13,8 +13,7 @@ export function GoogleConsent() {
           ad_user_data: 'denied',
           ad_personalization: 'denied',
           functionality_storage: 'granted',
-          security_storage: 'granted',
-          wait_for_update: 500
+          security_storage: 'granted'
         });
       `}
     </Script>

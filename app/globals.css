@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+html,
+body {
+  font-family: var(--font-main), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+/* Global headings - Webuilder style */
+main h1 {
+  @apply text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl;
+}
+
+/* main h2 {
+  @apply text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl;
+} */
+
+/* main h3 {
+  @apply text-2xl font-black leading-tight tracking-tight text-white md:text-3xl;
+} */
+
+main p {
+  @apply leading-8 text-gray-400;
+}
+
 :root {
   --background: #0b0f14;
   --foreground: #f9fafb;
@@ -78,4 +101,24 @@ body {
   transform: translate3d(0, 0, 0);
 }
 
+@keyframes steam {
+  0% {
+    transform: translateY(10px) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateY(-24px) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.animate-steam {
+  animation: steam 3.2s ease-in-out infinite;
+}
 

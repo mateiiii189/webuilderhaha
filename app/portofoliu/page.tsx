@@ -90,7 +90,7 @@ export default function PortofoliuPage() {
                   ].map((item) => (
                     <div
                       key={item}
-                      className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-300"
+                      className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-300 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.05] hover:text-white"
                     >
                       {item}
                     </div>
