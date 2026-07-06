@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "*.ngrok-free.app",
     "*.ngrok-free.dev",
+    "192.168.1.8",
+    
   ],
 
   images: {

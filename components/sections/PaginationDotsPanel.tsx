@@ -111,8 +111,8 @@ export function PaginationDotsPanel({
           top: panelTop,
           left: "50%",
         }}
-        className={`fixed z-50 w-[calc(100vw-32px)] max-w-[620px] -translate-x-1/2 -translate-y-full rounded-[1.5rem] border border-white/10 bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-300 md:w-auto md:min-w-[520px] ${
-          isOpen
+        className={`fixed z-50 w-[calc(100vw-32px)] max-w-[620px] -translate-x-1/2 -translate-y-full rounded-[1.5rem] bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-300 md:w-auto md:min-w-[520px] ${
+        isOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
         }`}
