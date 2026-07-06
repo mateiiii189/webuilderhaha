@@ -1,56 +1,50 @@
-import { revalidatePath } from "next/cache";
-import { NextResponse } from "next/server";
-import { parseBody } from "next-sanity/webhook";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { body, isValidSignature } = await parseBody<{
-      _type?: string;
-      slug?: {
-        current?: string;
-      };
-    }>(req, process.env.SANITY_REVALIDATE_SECRET);
+    const secret = request.nextUrl.searchParams.get("secret");
 
-    if (!isValidSignature) {
+    if (
+      process.env.SANITY_REVALIDATE_SECRET &&
+      secret !== process.env.SANITY_REVALIDATE_SECRET
+    ) {
       return NextResponse.json(
-        { message: "Invalid signature" },
+        { message: "Invalid secret" },
         { status: 401 }
       );
     }
 
+    const body = await request.json().catch(() => null);
     const type = body?._type;
-    const slug = body?.slug?.current;
 
     if (type === "post") {
+      revalidateTag("posts", "max");
       revalidatePath("/blog");
-
-      if (slug) {
-        revalidatePath(`/blog/${slug}`);
-      }
+      revalidatePath("/", "layout");
     }
 
     if (type === "review") {
+      revalidateTag("reviews", "max");
       revalidatePath("/");
+      revalidatePath("/", "layout");
     }
 
     if (type === "category" || type === "author") {
-      revalidatePath("/blog");
-      revalidatePath("/", "layout");
- type === "author") {
+      revalidateTag("posts", "max");
       revalidatePath("/blog");
       revalidatePath("/", "layout");
     }
 
     return NextResponse.json({
       revalidated: true,
-      type,
-      slug,
+      type: type || "unknown",
     });
   } catch (error) {
     return NextResponse.json(
       {
         revalidated: false,
-        error: "Revalidation failed",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
