@@ -12,6 +12,7 @@ type RequestBody = {
 
 function getAppsScriptUrl(): string {
   const value =
+    process.env.APPS_SCRIPT_WEB_APP_URL ??
     process.env.GOOGLE_APPS_SCRIPT_URL ??
     process.env.BOOKING_API_URL ??
     process.env.APPS_SCRIPT_URL;
