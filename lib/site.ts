@@ -4,8 +4,8 @@ export const siteConfig = {
   description:
     "Construim website-uri rapide, moderne și optimizate SEO pentru firme care vor mai mulți clienți.",
   email: "contact@webuilder.ro",
-  phone: "+40 XXX XXX XXX",
-  whatsapp: "https://wa.me/40725587098",
+  phone: "+40 723 591 403",
+  whatsapp: "https://wa.me/40723591403",
   nav: [
     {
       label: "Servicii",

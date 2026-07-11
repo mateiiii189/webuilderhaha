@@ -29,7 +29,7 @@ export const postType = defineType({
       type: 'text',
       rows: 3,
       description: 'Descriere scurtă afișată pe pagina de blog.',
-      validation: (Rule) => Rule.required().max(180),
+      validation: (Rule) => Rule.required().max(500),
     }),
 
     defineField({
@@ -103,6 +103,15 @@ export const postType = defineType({
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
       validation: (Rule) => Rule.required(),
+    }),
+
+    defineField({
+      name: "readingTime",
+      title: "Reading Time",
+      type: "number",
+      description: "Minute estimative de citire. Ex: 4, 6, 8, 10.",
+      initialValue: 5,
+      validation: (Rule) => Rule.min(1).max(60),
     }),
 
     defineField({

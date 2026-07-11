@@ -1,6 +1,5 @@
 import { Container } from "@/components/layout/Container";
 import { Card } from "@/components/ui/Card";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 
 const problems = [
   "Site vechi sau lipsă completă de website",
@@ -14,11 +13,21 @@ export function ProblemSection() {
   return (
     <section className="bg-[#0B0F14] py-24">
       <Container>
-        <SectionHeading
-          eyebrow="Problema"
-          title="Un website slab poate pierde clienți înainte să te contacteze."
-          description="Mulți oameni decid dacă au încredere într-o firmă în primele secunde. De aceea, website-ul trebuie să fie rapid, clar și construit cu obiectiv comercial."
-        />
+        <div className="max-w-4xl">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+            Problema
+          </p>
+
+          <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+            Un website slab poate pierde clienți înainte să te contacteze.
+          </h2>
+
+          <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+            Mulți oameni decid dacă au încredere într-o firmă în primele
+            secunde. De aceea, website-ul trebuie să fie rapid, clar și
+            construit cu obiectiv comercial.
+          </p>
+        </div>
 
         <div className="mt-12 grid gap-4 md:grid-cols-5">
           {problems.map((problem) => (

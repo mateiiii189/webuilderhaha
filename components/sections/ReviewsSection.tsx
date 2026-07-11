@@ -2,7 +2,6 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { Container } from "@/components/layout/Container";
 import { Card } from "@/components/ui/Card";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { ReviewsCarousel } from "@/components/sections/ReviewsCarousel";
 
@@ -55,11 +54,20 @@ export async function ReviewsSection() {
     <section className="bg-[#080B10] py-24">
       <Container>
         <ScrollReveal>
-          <SectionHeading
-            eyebrow="Testimoniale"
-            title="Ce spun firmele despre colaborare"
-            description="Feedback real de la branduri și firme pentru care construim website-uri rapide, clare și pregătite pentru conversie."
-          />
+          <div className="max-w-4xl">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              Testimoniale
+            </p>
+
+            <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+              Ce spun firmele despre colaborare
+            </h2>
+
+            <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+              Feedback real de la branduri și firme pentru care construim website-uri
+              rapide, clare și pregătite pentru conversie.
+            </p>
+          </div>
         </ScrollReveal>
 
         {formattedReviews.length > 0 ? (

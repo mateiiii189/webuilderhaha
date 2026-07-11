@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/Button";
 import { ProblemSection } from "@/components/sections/ProblemSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { ProcessSection } from "@/components/sections/ProcessSection";
-import { PricingSection } from "@/components/sections/PricingSection";
 import { ReviewsSection } from "@/components/sections/ReviewsSection";
 import { FAQSection } from "@/components/sections/FAQSection";
 import { CTASection } from "@/components/sections/CTASection";
+import { Target, Code2, Rocket } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0B0F14] text-white">
+    <main id="top" className="min-h-screen bg-[#0B0F14] text-white">
     <section className="relative overflow-hidden pt-28 pb-14 md:pt-32 md:pb-6">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
       <div className="absolute left-1/2 top-0 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-amber-400/15 blur-3xl" />
@@ -139,26 +139,52 @@ export default function Home() {
                       Design clar • Structură SEO • Lead-uri mai bune
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 pt-3">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                        <p className="text-[11px] text-gray-400">Pagină</p>
-                        <p className="mt-2 text-sm font-medium text-white">Homepage</p>
+                    <div className="pt-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          {
+                            icon: Target,
+                            title: "Strategie",
+                            text: "Plan clar",
+                          },
+                          {
+                            icon: Code2,
+                            title: "Build",
+                            text: "Site rapid",
+                          },
+                          {
+                            icon: Rocket,
+                            title: "Lansare",
+                            text: "Live",
+                          },
+                        ].map((item) => {
+                          const Icon = item.icon;
+
+                          return (
+                            <div
+                              key={item.title}
+                              className="group flex min-h-[125px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-4 text-center transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/25 hover:bg-white/[0.06]"
+                            >
+                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
+                              <Icon className="h-5 w-5" strokeWidth={2.2} />
+                            </div>
+
+                              <p className="text-sm font-bold leading-none text-white">
+                                {item.title}
+                              </p>
+
+                              <p className="text-[11px] font-medium leading-none text-gray-400">
+                                {item.text}
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                        <p className="text-[11px] text-gray-400">Pagină</p>
-                        <p className="mt-2 text-sm font-medium text-white">Servicii</p>
-                      </div>
-
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                        <p className="text-[11px] text-gray-400">Pagină</p>
-                        <p className="mt-2 text-sm font-medium text-white">Contact</p>
-                      </div>
+                      <Button href="/contact" className="mt-5 h-11 w-40 px-0 py-0">
+                        Cere ofertă
+                      </Button>
                     </div>
-
-                    <Button href="/contact" className="h-11 w-36 px-0 py-0">
-                      Cere ofertă
-                    </Button>
                   </div>
                 </div>
 

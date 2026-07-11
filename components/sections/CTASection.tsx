@@ -15,7 +15,7 @@ export function CTASection() {
                 Start building
               </p>
 
-              <h2 className="text-3xl font-semibold tracking-tight text-white md:text-5xl">
+              <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
                 Ai o afacere și vrei un website construit corect?
               </h2>
 

@@ -272,9 +272,9 @@ export function PortfolioCarousel() {
                   {demo.category}
                 </p>
 
-                <h2 className="mt-3 text-2xl font-semibold text-white">
+                <h3 className="mt-5 text-2xl font-bold leading-[1.05] tracking-[-0.035em] text-white">
                   {demo.title}
-                </h2>
+                </h3>
 
                 <p className="mt-4 min-h-[84px] text-sm leading-7 text-gray-400">
                   {demo.description}

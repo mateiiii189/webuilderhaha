@@ -3,21 +3,20 @@ import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Panel } from "@/components/ui/Panel";
 
 export const metadata: Metadata = {
   title: "Prețuri creare website",
   description:
-    "Prețuri orientative pentru creare website: landing page, website de prezentare, website cu programări și mentenanță lunară.",
+    "Prețuri orientative pentru creare website: landing page, website business, website premium și servicii suplimentare.",
 };
 
 const plans = [
   {
     name: "Landing Page",
-    price: "de la 300€",
+    price: "de la 450€",
     description:
-      "Pentru o ofertă, campanie, serviciu specific sau testarea unei idei.",
+      "Pentru o ofertă, campanie, serviciu specific sau validarea rapidă a unei idei.",
     features: [
       "1 pagină construită pentru conversie",
       "Design responsive",
@@ -29,9 +28,9 @@ const plans = [
   },
   {
     name: "Website Business",
-    price: "de la 700€",
+    price: "de la 850€",
     description:
-      "Pentru firme care vor o prezență online completă și profesionistă.",
+      "Pentru firme care vor o prezență online completă, clară și profesionistă.",
     features: [
       "4–6 pagini principale",
       "Structură SEO",
@@ -43,17 +42,18 @@ const plans = [
     highlighted: true,
   },
   {
-    name: "Website + Programări",
-    price: "de la 1.200€",
+    name: "Website Premium",
+    price: "de la 1.500€",
     description:
-      "Pentru firme care au nevoie de programări, lead-uri sau cereri structurate.",
+      "Pentru firme care vor un website mai avansat, cu structură completă, conversii, SEO și funcționalități personalizate.",
     features: [
-      "Website complet",
-      "Formular de programare",
-      "Buton WhatsApp / email",
-      "Pagini de servicii",
-      "SEO tehnic",
-      "Flow de lead-uri mai clar",
+      "Website complet custom",
+      "6–10 pagini principale",
+      "Strategie de conversie",
+      "Blog / articole SEO",
+      "Formulare avansate",
+      "Tracking conversii",
+      "Pagini legale standard",
     ],
   },
 ];
@@ -61,7 +61,7 @@ const plans = [
 const extras = [
   {
     title: "Mentenanță lunară",
-    price: "de la 50€/lună",
+    price: "de la 75€/lună",
     description:
       "Actualizări mici, verificări, modificări de texte, linkuri și suport basic.",
   },
@@ -73,9 +73,9 @@ const extras = [
   },
   {
     title: "Articol blog SEO",
-    price: "de la 50€",
+    price: "de la 12€",
     description:
-      "Articol structurat pentru întrebări comerciale și trafic organic.",
+      "Articol structurat pentru întrebări comerciale, trafic organic și poziționare mai bună în Google.",
   },
   {
     title: "Redesign website",
@@ -121,8 +121,9 @@ const faqs = [
 export default function PreturiPage() {
   return (
     <main className="min-h-screen bg-[#0B0F14] text-white">
-      <section className="relative overflow-hidden pt-40 pb-24">
+      <section className="relative overflow-hidden pb-24 pt-40">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
+
         <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-400/20 blur-3xl" />
 
         <Container className="relative">
@@ -131,18 +132,19 @@ export default function PreturiPage() {
               Prețuri
             </p>
 
-            <h1 className="text-5xl font-semibold tracking-tight md:text-7xl">
+            <h1 className="text-5xl font-black leading-[1] tracking-tight text-white md:text-7xl">
               Prețuri pentru website-uri construite corect.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300">
-              Pachete orientative pentru landing pages, website-uri de prezentare
-              și website-uri cu programări. Prețul final depinde de structură,
-              număr de pagini și funcționalități.
+              Pachete orientative pentru landing pages, website-uri business și
+              website-uri premium. Prețul final depinde de structură, număr de
+              pagini și funcționalități.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Button href="/contact">Cere ofertă exactă</Button>
+
               <Button href="/servicii" variant="secondary">
                 Vezi serviciile
               </Button>
@@ -153,29 +155,40 @@ export default function PreturiPage() {
 
       <section className="bg-[#080B10] py-24">
         <Container>
-          <SectionHeading
-            eyebrow="Pachete"
-            title="Alege punctul de pornire potrivit"
-            description="Nu vindem template-uri la kilogram. Fiecare pachet pornește de la o structură clară, adaptată obiectivului firmei."
-          />
+          <div className="max-w-4xl">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              Pachete
+            </p>
+
+            <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+              Alege punctul de pornire potrivit
+            </h2>
+
+            <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+              Nu vindem template-uri la kilogram. Fiecare pachet pornește de la
+              o structură clară, adaptată obiectivului firmei.
+            </p>
+          </div>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
-                <Card
+              <Card
                 key={plan.name}
-                className={`flex h-full flex-col ${
-                    plan.highlighted
+                className={`flex h-full flex-col transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.05] ${
+                  plan.highlighted
                     ? "border-amber-400/40 bg-amber-400/[0.06]"
                     : ""
                 }`}
-                >
-                {plan.highlighted ? <Badge>Recomandat</Badge> : null}
+              >
+                <div className="flex flex-wrap items-center gap-4">
+                  <h2 className="text-[1.65rem] font-bold leading-tight tracking-[-0.03em] text-white">
+                    {plan.name}
+                  </h2>
 
-                <h2 className="mt-5 text-2xl font-semibold text-white">
-                  {plan.name}
-                </h2>
+                  {plan.highlighted ? <Badge>Recomandat</Badge> : null}
+                </div>
 
-                <p className="mt-4 text-4xl font-semibold text-white">
+                <p className="mt-4 text-4xl font-bold tracking-tight text-white">
                   {plan.price}
                 </p>
 
@@ -185,8 +198,12 @@ export default function PreturiPage() {
 
                 <ul className="mt-8 space-y-3">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="text-sm text-gray-300">
-                      ✓ {feature}
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm text-gray-300"
+                    >
+                      <span className="text-amber-400">✓</span>
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -204,20 +221,32 @@ export default function PreturiPage() {
 
       <section className="bg-[#0B0F14] py-24">
         <Container>
-          <SectionHeading
-            eyebrow="Extra"
-            title="Servicii suplimentare"
-            description="Poți adăuga pagini, mentenanță sau conținut SEO în funcție de nevoile proiectului."
-          />
+          <div className="max-w-4xl">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              Extra
+            </p>
+
+            <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+              Servicii suplimentare
+            </h2>
+
+            <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+              Poți adăuga pagini, mentenanță sau conținut SEO în funcție de
+              nevoile proiectului.
+            </p>
+          </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {extras.map((extra) => (
-              <Card key={extra.title}>
-                <h2 className="text-xl font-semibold text-white">
+              <Card
+                key={extra.title}
+                className="transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.05]"
+              >
+                <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-white">
                   {extra.title}
                 </h2>
 
-                <p className="mt-3 text-2xl font-semibold text-amber-300">
+                <p className="mt-3 text-2xl font-bold text-amber-300">
                   {extra.price}
                 </p>
 
@@ -232,13 +261,21 @@ export default function PreturiPage() {
 
       <section className="bg-[#080B10] py-24">
         <Container>
-          <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+          <div className="grid gap-12 lg:grid-cols-[1fr_0.8fr] lg:items-center">
             <div>
-              <SectionHeading
-                eyebrow="Costuri externe"
-                title="Ce nu este inclus în prețul website-ului"
-                description="Ca să fie totul transparent, separăm costul de dezvoltare de costurile externe precum domeniu, hosting, email sau servicii terțe."
-              />
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+                Costuri externe
+              </p>
+
+              <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+                Ce nu este inclus în prețul website-ului
+              </h2>
+
+              <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+                Ca să fie totul transparent, separăm costul de dezvoltare de
+                costurile externe precum domeniu, hosting, email sau servicii
+                terțe.
+              </p>
 
               <div className="mt-8">
                 <Button href="/contact">Discută proiectul</Button>
@@ -247,11 +284,18 @@ export default function PreturiPage() {
 
             <Card>
               <div className="space-y-4 text-sm text-gray-300">
-                <p>✓ Domeniu .ro / .com</p>
-                <p>✓ Găzduire / Vercel Pro, dacă este cazul</p>
-                <p>✓ Email business</p>
-                <p>✓ Servicii externe: analytics, formulare, automatizări</p>
-                <p>✓ Texte profesionale avansate, dacă sunt cerute separat</p>
+                {[
+                  "Domeniu .ro / .com",
+                  "Găzduire / Vercel Pro, dacă este cazul",
+                  "Email business",
+                  "Servicii externe: analytics, formulare, automatizări",
+                  "Texte profesionale avansate, dacă sunt cerute separat",
+                ].map((item) => (
+                  <p key={item} className="flex items-start gap-2">
+                    <span className="text-amber-400">✓</span>
+                    <span>{item}</span>
+                  </p>
+                ))}
               </div>
             </Card>
           </div>
@@ -260,18 +304,31 @@ export default function PreturiPage() {
 
       <section className="bg-[#0B0F14] py-24">
         <Container>
-          <SectionHeading
-            eyebrow="FAQ"
-            title="Întrebări despre prețuri"
-            description="Cele mai comune întrebări despre costuri, durată, facturare și ce este inclus."
-          />
+          <div className="max-w-4xl">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+              FAQ
+            </p>
+
+            <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+              Întrebări despre prețuri
+            </h2>
+
+            <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+              Cele mai comune întrebări despre costuri, durată, facturare și ce
+              este inclus.
+            </p>
+          </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {faqs.map((faq) => (
-              <Card key={faq.question}>
-                <h2 className="text-lg font-semibold text-white">
+              <Card
+                key={faq.question}
+                className="transition duration-500 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.05]"
+              >
+                <h2 className="text-xl font-bold leading-tight text-white">
                   {faq.question}
                 </h2>
+
                 <p className="mt-4 text-sm leading-7 text-gray-400">
                   {faq.answer}
                 </p>
@@ -289,17 +346,19 @@ export default function PreturiPage() {
                 Start building
               </p>
 
-              <h2 className="text-3xl font-semibold tracking-tight text-white md:text-5xl">
+              <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
                 Nu știi ce pachet se potrivește?
               </h2>
 
               <p className="mt-5 text-base leading-8 text-gray-400 md:text-lg">
-                Spune-ne ce tip de firmă ai, ce servicii vinzi și ce obiectiv ai.
-                Îți recomandăm structura potrivită și îți facem o estimare clară.
+                Spune-ne ce tip de firmă ai, ce servicii vinzi și ce obiectiv
+                ai. Îți recomandăm structura potrivită și îți facem o estimare
+                clară.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <Button href="/contact">Cere ofertă exactă</Button>
+
                 <Button href="/servicii" variant="secondary">
                   Vezi serviciile
                 </Button>

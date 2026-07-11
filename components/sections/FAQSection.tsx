@@ -1,6 +1,5 @@
 import { Container } from "@/components/layout/Container";
 import { Card } from "@/components/ui/Card";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 
 const faqs = [
   {
@@ -29,11 +28,20 @@ export function FAQSection() {
   return (
     <section className="bg-[#0B0F14] py-24">
       <Container>
-        <SectionHeading
-          eyebrow="FAQ"
-          title="Întrebări frecvente"
-          description="Răspunsuri rapide pentru firmele care vor să înceapă un website construit corect."
-        />
+        <div className="max-w-4xl">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
+            FAQ
+          </p>
+
+          <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
+            Întrebări frecvente
+          </h2>
+
+          <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
+            Răspunsuri rapide pentru firmele care vor să înceapă un website
+            construit corect.
+          </p>
+        </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {faqs.map((faq) => (
@@ -41,6 +49,7 @@ export function FAQSection() {
               <h3 className="text-lg font-semibold text-white">
                 {faq.question}
               </h3>
+
               <p className="mt-4 text-sm leading-7 text-gray-400">
                 {faq.answer}
               </p>

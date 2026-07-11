@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
+import { MdVerified } from "react-icons/md";
+import { SmoothScrollLink } from "@/components/ui/SmoothScrollLink";
 import { redirect } from "next/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
@@ -16,6 +18,7 @@ type Post = {
   slug: string;
   excerpt?: string;
   seoDescription?: string;
+  readingTime?: number;
   publishedAt: string;
   postType: string;
   coverImage?: unknown;
@@ -43,6 +46,7 @@ const postQuery = `
     excerpt,
     seoDescription,
     publishedAt,
+    readingTime,
     postType,
     coverImage,
     body,
@@ -152,6 +156,14 @@ function extractToc(body: any[] = []): TocItem[] {
     .filter((item) => item.title);
 }
 
+function formatPostDate(date: string) {
+  return new Date(date).toLocaleDateString("ro-RO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -207,15 +219,9 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[#0B0F14] text-white">
-      {/* hero */}
       <section className="relative overflow-hidden border-b border-white/10 bg-[#0B0F14] pt-36 pb-20 md:pt-40 md:pb-24">
-        {/* page grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px] opacity-25" />
-
-        {/* center amber glow */}
         <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-amber-400/15 blur-[90px]" />
-
-        {/* darker side fade */}
         <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-[#0B0F14] to-transparent" />
         <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-[#0B0F14] to-transparent" />
 
@@ -252,45 +258,26 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </p>
               ) : null}
 
-              <div className="mt-9 flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/35 bg-amber-400/10 text-sm font-black text-amber-300">
-                  W
-                </span>
+            <div className="mt-9 flex flex-wrap items-center gap-4 text-sm text-gray-400">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/40 bg-amber-400/10 text-sm font-bold text-amber-300 transition duration-300 group-hover:border-amber-400/70 group-hover:bg-amber-400 group-hover:text-black group-hover:shadow-lg group-hover:shadow-amber-400/20">
+                W
+              </span>
 
-                <span className="inline-flex items-center gap-2 font-semibold text-white">
-                  {post.author?.name || "Webuilder"}
+              <span className="inline-flex items-center gap-2 font-semibold text-white">
+                {post.author?.name || "Webuilder"}
 
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0095F6]">
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-3.5 w-3.5 text-white"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M7 12.5l3.2 3.2L17.5 8.5"
-                        stroke="currentColor"
-                        strokeWidth="2.7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </span>
+                <MdVerified className="h-5 w-5 text-amber-400" />
+              </span>
 
                 <span className="hidden h-1 w-1 rounded-full bg-amber-400/60 sm:block" />
 
                 <time dateTime={post.publishedAt}>
-                  {new Date(post.publishedAt).toLocaleDateString("ro-RO", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {formatPostDate(post.publishedAt)}
                 </time>
 
                 <span className="hidden h-1 w-1 rounded-full bg-amber-400/60 sm:block" />
 
-                <span>8 min citire</span>
+                <span>{post.readingTime || 5} min citire</span>
               </div>
 
               <div className="mt-9 border-t border-white/10 pt-7">
@@ -301,7 +288,6 @@ export default async function BlogPostPage({ params }: PageProps) {
         </Container>
       </section>
 
-      {/* content */}
       <section className="relative overflow-hidden bg-[#080B10] px-4 py-16 md:px-8 md:py-20">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-10" />
 
@@ -329,8 +315,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                   <ol className="mt-6 space-y-4">
                     {toc.map((item, index) => (
                       <li key={item.id}>
-                        <a
-                          href={`#${item.id}`}
+                        <SmoothScrollLink
+                          targetId={item.id}
+                          offset={120}
+                          duration={1100}
                           className="group grid grid-cols-[30px_minmax(0,1fr)] gap-4 text-[15px] leading-7 text-gray-300 transition duration-500 hover:text-white"
                         >
                           <span className="font-semibold text-amber-400">
@@ -340,14 +328,14 @@ export default async function BlogPostPage({ params }: PageProps) {
                           <span className="min-w-0 transition duration-500 group-hover:text-amber-300">
                             {item.title}
                           </span>
-                        </a>
+                        </SmoothScrollLink>
                       </li>
                     ))}
                   </ol>
                 </div>
               ) : null}
 
-              <div className="rounded-[2rem] border border-amber-400/25 bg-amber-400/[0.06] p-7 shadow-2xl shadow-black/20">
+              <div className="group rounded-[2rem] border border-amber-400/25 bg-amber-400/[0.06] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/45 hover:bg-amber-400/[0.09] hover:shadow-amber-400/10">
                 <div className="text-xs font-black uppercase tracking-[0.22em] text-amber-300">
                   Ai nevoie de website?
                 </div>
@@ -359,7 +347,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                 <Link
                   href="/contact"
-                  className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-amber-400 px-5 text-sm font-black text-black transition duration-500 hover:-translate-y-0.5 hover:bg-amber-300"
+                  className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-amber-400 px-5 text-sm font-black text-black transition duration-500 group-hover:-translate-y-0.5 hover:bg-amber-300"
                 >
                   Cere ofertă
                 </Link>
@@ -369,7 +357,6 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* recommended articles */}
       <section className="relative overflow-hidden border-t border-white/10 bg-[#0B0F14] px-4 py-16 md:px-8 md:py-20">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-15" />
         <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-amber-400/10 blur-[90px]" />
@@ -480,13 +467,13 @@ export default async function BlogPostPage({ params }: PageProps) {
           ) : (
             <ScrollReveal delay={0.06}>
               <div className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center shadow-2xl shadow-black/20 md:p-10">
-
-                <h3 className="mt-6 text-2xl font-black tracking-[-0.04em] text-white">
+                <h3 className="text-2xl font-black tracking-[-0.04em] text-white">
                   :(
                 </h3>
 
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-400">
-                  Momentan nu există alte articole publicate în această categorie.
+                  Momentan nu există alte articole publicate în această
+                  categorie.
                 </p>
 
                 <Link

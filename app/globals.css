@@ -122,3 +122,47 @@ body {
   animation: steam 3.2s ease-in-out infinite;
 }
 
+.booking-input,
+.booking-input:hover,
+.booking-input:focus,
+.booking-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+input.booking-input:-webkit-autofill,
+input.booking-input:-webkit-autofill:hover,
+input.booking-input:-webkit-autofill:focus,
+input.booking-input:-webkit-autofill:active,
+textarea.booking-input:-webkit-autofill,
+textarea.booking-input:-webkit-autofill:hover,
+textarea.booking-input:-webkit-autofill:focus,
+textarea.booking-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  background-color: #0b0f14 !important;
+  background-image: none !important;
+  -webkit-box-shadow: 0 0 0 1000px #0b0f14 inset !important;
+  box-shadow: 0 0 0 1000px #0b0f14 inset !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+}
+
+.booking-input {
+  color-scheme: dark;
+}
+
+.contact-input:-webkit-autofill,
+.contact-input:-webkit-autofill:hover,
+.contact-input:-webkit-autofill:focus,
+.contact-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  -webkit-box-shadow: 0 0 0 1000px #171B21 inset !important;
+  box-shadow: 0 0 0 1000px #171B21 inset !important;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.contact-input {
+  color-scheme: dark;
+}
