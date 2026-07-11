@@ -190,14 +190,18 @@ export default function CancellationClient() {
           duration: 0.55,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-white/10 bg-[#11161D] shadow-2xl shadow-black/40"
+        className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-amber-400/40 bg-[#11161D] shadow-2xl shadow-black/40 transition duration-300 hover:border-amber-400/70 hover:shadow-amber-400/10"
       >
         <div className="border-b border-white/10 px-7 py-6 sm:px-9">
-          <img
-            src="/images/w.png"
-            alt="Webuilder"
-            className="h-11 w-auto"
-          />
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-400/40 bg-amber-400/10 text-sm font-bold text-amber-300">
+              W
+            </span>
+
+            <span className="text-base font-semibold tracking-tight text-white">
+              Webuilder.ro
+            </span>
+          </div>
         </div>
 
         <div className="px-7 py-9 sm:px-9 sm:py-11">
@@ -265,7 +269,7 @@ export default function CancellationClient() {
                     din nou disponibil.
                   </p>
 
-                  <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-5">
+                  <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-amber-400/[0.03] hover:shadow-lg hover:shadow-amber-400/5">
                     <p className="text-xs font-bold uppercase tracking-[0.15em] text-white/35">
                       {meeting.title}
                     </p>
@@ -289,21 +293,11 @@ export default function CancellationClient() {
                     </motion.p>
                   )}
 
-                  <motion.button
+                  <button
                     type="button"
                     onClick={cancelMeeting}
                     disabled={state === "cancelling"}
-                    whileHover={
-                      state === "cancelling"
-                        ? undefined
-                        : { y: -2 }
-                    }
-                    whileTap={
-                      state === "cancelling"
-                        ? undefined
-                        : { scale: 0.985 }
-                    }
-                    className="mt-7 flex w-full items-center justify-center rounded-full bg-yellow-400 px-6 py-4 text-sm font-extrabold text-black transition disabled:cursor-wait disabled:opacity-70"
+                    className="mt-7 flex w-full items-center justify-center rounded-full bg-yellow-400 px-6 py-4 text-sm font-extrabold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-lg hover:shadow-yellow-400/20 active:translate-y-0 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                   >
                     {state === "cancelling" ? (
                       <>
@@ -321,7 +315,7 @@ export default function CancellationClient() {
                     ) : (
                       "Anulează programarea"
                     )}
-                  </motion.button>
+                  </button>
 
                   <p className="mt-5 text-center text-xs leading-5 text-white/30">
                     Închide pagina pentru a păstra
