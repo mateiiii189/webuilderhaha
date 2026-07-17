@@ -384,7 +384,7 @@ export function BookingCalendar() {
       });
 
       await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 1000);
+        window.setTimeout(resolve, 100);
       });
 
       setStep("success");
