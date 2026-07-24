@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 type Slot = {
@@ -145,6 +152,40 @@ function ErrorMessage({ message }: { message: string }) {
 }
 
 export function BookingCalendar() {
+  useLayoutEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    const previousHtmlScrollBehavior =
+      html.style.scrollBehavior;
+    const previousBodyScrollBehavior =
+      body.style.scrollBehavior;
+
+    html.style.scrollBehavior = "auto";
+    body.style.scrollBehavior = "auto";
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+
+    const frameId = window.requestAnimationFrame(() => {
+      html.style.scrollBehavior =
+        previousHtmlScrollBehavior;
+      body.style.scrollBehavior =
+        previousBodyScrollBehavior;
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      html.style.scrollBehavior =
+        previousHtmlScrollBehavior;
+      body.style.scrollBehavior =
+        previousBodyScrollBehavior;
+    };
+  }, []);
+
   const today = useMemo(() => {
     const value = new Date();
     value.setHours(0, 0, 0, 0);
@@ -165,6 +206,17 @@ export function BookingCalendar() {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  const availabilityAbortRef =
+    useRef<AbortController | null>(null);
+
+  const availabilityRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      availabilityAbortRef.current?.abort();
+    };
+  }, []);
 
   const [form, setForm] = useState<FormData>({
     name: "",
@@ -255,6 +307,16 @@ export function BookingCalendar() {
   async function selectDate(date: Date) {
     const dateKey = formatDateKey(date);
 
+    const requestId =
+      availabilityRequestIdRef.current + 1;
+
+    availabilityRequestIdRef.current = requestId;
+
+    availabilityAbortRef.current?.abort();
+
+    const controller = new AbortController();
+    availabilityAbortRef.current = controller;
+
     setSelectedDate(dateKey);
     setSelectedSlot(null);
     setSlots([]);
@@ -262,33 +324,66 @@ export function BookingCalendar() {
     setLoadingSlots(true);
 
     try {
-      const response = await fetch("/api/booking/availability", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "/api/booking/availability",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ date: dateKey }),
+          signal: controller.signal,
         },
-        body: JSON.stringify({
-          date: dateKey,
-        }),
-      });
+      );
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        success: boolean;
+        slots?: Slot[];
+        error?: string;
+      };
+
+      if (
+        requestId !==
+        availabilityRequestIdRef.current
+      ) {
+        return;
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.error || "Disponibilitatea nu a putut fi citită.",
+          data.error ||
+            "Disponibilitatea nu a putut fi citită.",
         );
       }
 
       setSlots(data.slots ?? []);
     } catch (requestError) {
+      if (
+        requestError instanceof DOMException &&
+        requestError.name === "AbortError"
+      ) {
+        return;
+      }
+
+      if (
+        requestId !==
+        availabilityRequestIdRef.current
+      ) {
+        return;
+      }
+
       setError(
         requestError instanceof Error
           ? requestError.message
           : "A apărut o eroare.",
       );
     } finally {
-      setLoadingSlots(false);
+      if (
+        requestId ===
+        availabilityRequestIdRef.current
+      ) {
+        setLoadingSlots(false);
+      }
     }
   }
 
@@ -384,7 +479,7 @@ export function BookingCalendar() {
       });
 
       await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 100);
+        window.setTimeout(resolve, 2000);
       });
 
       setStep("success");

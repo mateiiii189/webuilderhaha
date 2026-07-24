@@ -230,10 +230,15 @@ export default async function BlogPostPage({ params }: PageProps) {
             <article className="max-w-[980px]">
               <Link
                 href="/blog"
-                className="group inline-flex w-fit items-center gap-2 text-sm font-semibold text-gray-300 transition duration-500 hover:-translate-x-1 hover:text-amber-300"
+                className="group inline-flex w-fit items-center gap-2 text-sm font-semibold text-gray-300 transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-300"
               >
-                <span className="text-lg leading-none">←</span>
-                Înapoi la blog
+                <span className="inline-block text-lg leading-none transition-transform duration-300 group-hover:-translate-x-1.5">
+                  ←
+                </span>
+
+                <span className="inline-block transition-transform duration-300">
+                  Înapoi la blog
+                </span>
               </Link>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -288,72 +293,58 @@ export default async function BlogPostPage({ params }: PageProps) {
         </Container>
       </section>
 
-      <section className="relative overflow-hidden bg-[#080B10] px-4 py-16 md:px-8 md:py-20">
+      <section className="relative bg-[#080B10] px-4 py-16 md:px-8 md:py-20">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] opacity-10" />
 
-        <div className="relative mx-auto grid w-full max-w-7xl gap-10 xl:grid-cols-[minmax(0,1fr)_330px] xl:items-start">
+        <div className="relative mx-auto grid w-full max-w-7xl gap-10 xl:grid-cols-[minmax(0,1fr)_330px]">
           <ScrollReveal>
             <article className="w-full min-w-0 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 md:p-10 xl:p-12">
               <PortableTextRenderer value={body} />
             </article>
           </ScrollReveal>
 
-          <ScrollReveal delay={0.08}>
-            <aside className="space-y-6 xl:sticky xl:top-28">
-              {toc.length > 0 ? (
-                <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.045]">
-                  <div className="flex items-center justify-between gap-4">
-                    <h3 className="text-3xl font-black tracking-tight text-amber-300">
-                      Cuprins
-                    </h3>
+          <div className="hidden h-full xl:block [&>div]:h-full">
+            <ScrollReveal delay={0.08}>
+              <aside className="h-full">
+                <div className="sticky top-28">
+                  {toc.length > 0 ? (
+                    <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.045]">
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-3xl font-black tracking-tight text-amber-300">
+                          Cuprins
+                        </h3>
 
-                    <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-black text-black">
-                      {toc.length}
-                    </span>
-                  </div>
+                        <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-black text-black">
+                          {toc.length}
+                        </span>
+                      </div>
 
-                  <ol className="mt-6 space-y-4">
-                    {toc.map((item, index) => (
-                      <li key={item.id}>
-                        <SmoothScrollLink
-                          targetId={item.id}
-                          offset={120}
-                          duration={1100}
-                          className="group grid grid-cols-[30px_minmax(0,1fr)] gap-4 text-[15px] leading-7 text-gray-300 transition duration-500 hover:text-white"
-                        >
-                          <span className="font-semibold text-amber-400">
-                            {index + 1}.
-                          </span>
+                      <ol className="mt-6 space-y-4">
+                        {toc.map((item, index) => (
+                          <li key={item.id}>
+                            <SmoothScrollLink
+                              targetId={item.id}
+                              offset={120}
+                              duration={1100}
+                              className="group grid grid-cols-[30px_minmax(0,1fr)] gap-4 text-[15px] leading-7 text-gray-300 transition duration-500 hover:text-white"
+                            >
+                              <span className="font-semibold text-amber-400">
+                                {index + 1}.
+                              </span>
 
-                          <span className="min-w-0 transition duration-500 group-hover:text-amber-300">
-                            {item.title}
-                          </span>
-                        </SmoothScrollLink>
-                      </li>
-                    ))}
-                  </ol>
+                              <span className="min-w-0 transition duration-500 group-hover:text-amber-300">
+                                {item.title}
+                              </span>
+                            </SmoothScrollLink>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-
-              <div className="group rounded-[2rem] border border-amber-400/25 bg-amber-400/[0.06] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/45 hover:bg-amber-400/[0.09] hover:shadow-amber-400/10">
-                <div className="text-xs font-black uppercase tracking-[0.22em] text-amber-300">
-                  Ai nevoie de website?
-                </div>
-
-                <p className="mt-4 text-sm leading-7 text-gray-300">
-                  Construim website-uri rapide, curate și pregătite pentru
-                  conversii.
-                </p>
-
-                <Link
-                  href="/contact"
-                  className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-amber-400 px-5 text-sm font-black text-black transition duration-500 group-hover:-translate-y-0.5 hover:bg-amber-300"
-                >
-                  Cere ofertă
-                </Link>
-              </div>
-            </aside>
-          </ScrollReveal>
+              </aside>
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 

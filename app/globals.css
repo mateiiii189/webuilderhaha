@@ -32,10 +32,6 @@ main p {
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: auto;
-}
-
 body {
   margin: 0;
   background: var(--background);

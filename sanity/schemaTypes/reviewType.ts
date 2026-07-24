@@ -54,6 +54,15 @@ export const reviewType = defineType({
     }),
 
     defineField({
+      name: "isPinned",
+      title: "Testimonial evidențiat",
+      description:
+        "Dacă este activ, testimonialul apare în cardul mare din partea de sus. Dacă niciun testimonial nu este evidențiat, apare automat cel mai recent.",
+      type: "boolean",
+      initialValue: false,
+    }),
+
+    defineField({
       name: "publishedAt",
       title: "Published At",
       type: "datetime",

@@ -1,76 +1,203 @@
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  Bot,
+  Code2,
+  Compass,
+  Gauge,
+} from "lucide-react";
 import { Container } from "@/components/layout/Container";
-import { Card } from "@/components/ui/Card";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
-const services = [
+const stages = [
   {
-    title: "Website de prezentare",
+    index: "01",
+    title: "Clarificăm direcția",
     description:
-      "Pentru firme care vor o imagine profesională și o prezență online solidă.",
-    href: "/website-de-prezentare",
+      "Înțelegem oferta, publicul și obiectivul real al proiectului înainte să desenăm primul ecran.",
+    icon: Compass,
+    points: [
+      "Strategie și poziționare",
+      "Structură orientată spre conversie",
+    ],
   },
   {
-    title: "Landing page",
+    index: "02",
+    title: "Construim experiența",
     description:
-      "Pentru campanii, servicii specifice și conversii rapide din trafic.",
-    href: "/landing-page",
+      "Transformăm direcția într-un website custom, coerent, rapid și ușor de folosit.",
+    icon: Code2,
+    points: [
+      "Design și dezvoltare web",
+      "Responsive, accesibil și scalabil",
+    ],
   },
   {
-    title: "Website cu programări",
+    index: "03",
+    title: "Lansăm corect",
     description:
-      "Pentru saloane, clinici, consultanți și afaceri bazate pe rezervări.",
-    href: "/website-cu-programari",
+      "Pregătim fundația tehnică pentru performanță, indexare și integrarea instrumentelor necesare.",
+    icon: Gauge,
+    points: [
+      "SEO tehnic și performanță",
+      "Integrări, tracking și optimizare",
+    ],
   },
   {
-    title: "Redesign website",
+    index: "04",
+    title: "Creștem și automatizăm",
     description:
-      "Transformăm site-ul vechi într-un website modern, rapid și clar.",
-    href: "/redesign-website",
+      "După lansare, continuăm cu automatizări, funcții noi și îmbunătățiri bazate pe rezultate.",
+    icon: Bot,
+    points: [
+      "AI și automatizări",
+      "Suport și dezvoltare continuă",
+    ],
   },
+];
+
+const capabilities = [
+  "Website-uri de prezentare",
+  "Landing pages",
+  "Magazine online",
+  "Platforme web",
+  "Sisteme de programări",
+  "Integrări CRM",
+  "Automatizări",
+  "Redesign",
 ];
 
 export function ServicesSection() {
   return (
-    <section className="bg-[#080B10] py-24">
-      <Container>
-        <div className="max-w-4xl">
-          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
-            Servicii
-          </p>
+    <section className="relative overflow-hidden border-t border-white/10 bg-[#080B10] py-20 md:py-24">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-amber-400/[0.07] blur-[110px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:64px_64px] opacity-30" />
 
-          <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
-            Ce construim pentru afacerea ta
-          </h2>
+      <Container className="relative">
+        <ScrollReveal>
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-4xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-amber-400">
+                Servicii
+              </p>
 
-          <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
-            Fiecare pagină este gândită cu structură clară, SEO tehnic și
-            obiectiv de conversie.
-          </p>
+              <h2 className="mt-5 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.05em] text-white md:text-5xl">
+                De la idee la creștere, acoperim tot traseul digital.
+              </h2>
+
+              <p className="mt-6 max-w-3xl text-base leading-8 text-gray-400 md:text-lg">
+                Nu vindem doar pagini. Legăm strategia, designul, dezvoltarea,
+                SEO-ul și automatizările într-un sistem construit în jurul
+                afacerii tale.
+              </p>
+            </div>
+
+            <Link
+              href="/servicii"
+              className="group/button inline-flex h-12 w-fit items-center justify-center gap-2 rounded-full border border-amber-400/35 bg-amber-400/10 px-7 text-sm font-black text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400 hover:bg-amber-400 hover:text-black"
+            >
+              Explorează serviciile
+
+              <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5" />
+            </Link>
+          </div>
+        </ScrollReveal>
+
+        <div className="relative mt-12">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {stages.map((stage, index) => {
+              const Icon = stage.icon;
+
+              return (
+                <ScrollReveal
+                  key={stage.index}
+                  delay={index * 0.07}
+                >
+                  <article className="group relative flex h-full min-h-[330px] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.045]">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300 transition duration-300 group-hover:border-amber-400/55">
+                        <Icon className="h-5 w-5" strokeWidth={2.1} />
+                      </div>
+
+                      <span className="text-xs font-black tracking-[0.2em] text-white/25 transition duration-300 group-hover:text-amber-300/70">
+                        {stage.index}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-7 text-2xl font-black tracking-[-0.04em] text-white transition duration-500 group-hover:text-amber-300">
+                      {stage.title}
+                    </h3>
+
+                    <p className="mt-4 text-sm leading-7 text-gray-400">
+                      {stage.description}
+                    </p>
+
+                    <div className="mt-auto space-y-3 border-t border-white/10 pt-6">
+                      {stage.points.map((point) => (
+                        <div
+                          key={point}
+                          className="flex items-start gap-3 text-sm leading-6 text-gray-300"
+                        >
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                          <span>{point}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                </ScrollReveal>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {services.map((service) => (
-            <Link key={service.href} href={service.href}>
-              <Card className="h-full transition hover:border-amber-400/40 hover:bg-white/[0.05]">
-                <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/10 text-xl text-amber-300">
-                  ▦
-                </div>
+        <ScrollReveal delay={0.16}>
+          <div className="group/capabilities mt-6 rounded-[2rem] border border-white/10 bg-[#0D1218] p-6 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-[#10161E] md:p-8">
+            <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+                  Capabilități
+                </p>
 
-                <h3 className="text-xl font-semibold text-white">
-                  {service.title}
+                <h3 className="mt-4 text-3xl font-black leading-[1] tracking-[-0.045em] text-white">
+                  Construim mai mult decât un simplu website.
                 </h3>
 
-                <p className="mt-4 text-sm leading-7 text-gray-400">
-                  {service.description}
+                <p className="mt-4 max-w-xl text-sm leading-7 text-gray-400">
+                  Alegem combinația potrivită în funcție de obiectivele,
+                  procesele și etapa în care se află afacerea.
                 </p>
+              </div>
 
-                <p className="mt-6 text-sm font-semibold text-amber-300">
-                  Vezi detalii →
-                </p>
-              </Card>
-            </Link>
-          ))}
-        </div>
+              <div>
+                <div className="flex flex-wrap gap-3 lg:justify-end">
+                  {capabilities.map((capability) => (
+                    <span
+                      key={capability}
+                      className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-white/[0.06] hover:text-white"
+                    >
+                      {capability}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-5 flex lg:justify-end">
+                  <Link
+                    href="/servicii"
+                    className="group/more inline-flex items-center gap-2 text-sm font-black text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:text-amber-300"
+                  >
+                    Vezi mai multe
+
+                    <span className="transition duration-300 group-hover/more:translate-x-1">
+                      →
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
       </Container>
     </section>
   );

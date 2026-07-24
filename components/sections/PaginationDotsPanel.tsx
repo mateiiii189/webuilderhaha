@@ -1,138 +1,289 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+
+type PaginationDotsPanelProps = {
+  currentPage: number;
+  totalPages: number;
+  basePath?: string;
+};
+
+type PanelPosition = {
+  top: number;
+  left: number;
+};
+
+function getPageHref(
+  basePath: string,
+  page: number,
+) {
+  return page === 1
+    ? basePath
+    : `${basePath}?page=${page}`;
+}
 
 export function PaginationDotsPanel({
   currentPage,
   totalPages,
-}: {
-  currentPage: number;
-  totalPages: number;
-}) {
-  const [clickOpen, setClickOpen] = useState(false);
-  const [hoverOpen, setHoverOpen] = useState(false);
-  const [panelTop, setPanelTop] = useState(0);
+  basePath = "/blog",
+}: PaginationDotsPanelProps) {
+  const [mounted, setMounted] =
+    useState(false);
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [clickOpen, setClickOpen] =
+    useState(false);
 
-  const pages = Array.from({ length: totalPages }).map((_, index) => index + 1);
+  const [hoverOpen, setHoverOpen] =
+    useState(false);
+
+  const [position, setPosition] =
+    useState<PanelPosition>({
+      top: 0,
+      left: 0,
+    });
+
+  const wrapperRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const buttonRef =
+    useRef<HTMLButtonElement | null>(null);
+
+  const panelRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const closeTimerRef =
+    useRef<ReturnType<
+      typeof setTimeout
+    > | null>(null);
+
+  const pages = Array.from(
+    { length: totalPages },
+    (_, index) => index + 1,
+  );
+
   const isOpen = clickOpen || hoverOpen;
 
   function deviceHasHover() {
-    if (typeof window === "undefined") return false;
+    return window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    ).matches;
+  }
 
-    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  function cancelScheduledClose() {
+    if (!closeTimerRef.current) {
+      return;
+    }
+
+    clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
   }
 
   function updatePanelPosition() {
-    if (!buttonRef.current) return;
+    if (!buttonRef.current) {
+      return;
+    }
 
-    const rect = buttonRef.current.getBoundingClientRect();
+    const rect =
+      buttonRef.current.getBoundingClientRect();
 
-    setPanelTop(Math.max(16, rect.top - 12));
+    setPosition({
+      /*
+       * Panoul se suprapune cu 4px peste partea de sus a
+       * butonului. Astfel nu există nicio zonă moartă între ele.
+       */
+      top: Math.max(16, rect.top + 4),
+      left:
+        rect.left + rect.width / 2,
+    });
   }
 
-  function handleMouseEnter() {
-    if (deviceHasHover()) {
-      updatePanelPosition();
-      setHoverOpen(true);
+  function openFromButton() {
+    if (!deviceHasHover()) {
+      return;
     }
+
+    cancelScheduledClose();
+    updatePanelPosition();
+    setHoverOpen(true);
   }
 
-  function handleMouseLeave() {
-    if (deviceHasHover()) {
-      setHoverOpen(false);
+  function keepPanelOpen() {
+    cancelScheduledClose();
+  }
+
+  function scheduleHoverClose() {
+    if (!deviceHasHover()) {
+      return;
     }
+
+    cancelScheduledClose();
+
+    closeTimerRef.current =
+      setTimeout(() => {
+        setHoverOpen(false);
+        closeTimerRef.current = null;
+      }, 280);
   }
 
   function handleDotsClick() {
+    cancelScheduledClose();
     updatePanelPosition();
 
-    if (!deviceHasHover()) {
-      setClickOpen((current) => !current);
-    }
+    setClickOpen((current) => !current);
   }
 
   useEffect(() => {
-    function handleClickOutside(event: PointerEvent) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        setClickOpen(false);
-        setHoverOpen(false);
-      }
-    }
-
-    document.addEventListener("pointerdown", handleClickOutside);
+    setMounted(true);
 
     return () => {
-      document.removeEventListener("pointerdown", handleClickOutside);
+      setMounted(false);
     };
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    function handleClickOutside(
+      event: PointerEvent,
+    ) {
+      const target = event.target as Node;
 
-    function handleUpdatePosition() {
+      const clickedWrapper =
+        wrapperRef.current?.contains(
+          target,
+        );
+
+      const clickedPanel =
+        panelRef.current?.contains(
+          target,
+        );
+
+      if (
+        clickedWrapper ||
+        clickedPanel
+      ) {
+        return;
+      }
+
+      cancelScheduledClose();
+      setClickOpen(false);
+      setHoverOpen(false);
+    }
+
+    document.addEventListener(
+      "pointerdown",
+      handleClickOutside,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handleClickOutside,
+      );
+
+      cancelScheduledClose();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handlePositionUpdate() {
       updatePanelPosition();
     }
 
-    window.addEventListener("scroll", handleUpdatePosition, true);
-    window.addEventListener("resize", handleUpdatePosition);
+    window.addEventListener(
+      "scroll",
+      handlePositionUpdate,
+      true,
+    );
+
+    window.addEventListener(
+      "resize",
+      handlePositionUpdate,
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleUpdatePosition, true);
-      window.removeEventListener("resize", handleUpdatePosition);
+      window.removeEventListener(
+        "scroll",
+        handlePositionUpdate,
+        true,
+      );
+
+      window.removeEventListener(
+        "resize",
+        handlePositionUpdate,
+      );
     };
   }, [isOpen]);
 
-  return (
-    <div
-      ref={wrapperRef}
-      className="relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={handleDotsClick}
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-gray-400 transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300"
-        aria-label="Arată toate paginile"
-      >
-        ...
-      </button>
+  const panel =
+    mounted
+      ? createPortal(
+          <div
+            ref={panelRef}
+            onMouseEnter={keepPanelOpen}
+            onMouseLeave={scheduleHoverClose}
+            style={{
+              top: position.top,
+              left: position.left,
+            }}
+            className={`fixed z-[100] w-[calc(100vw-32px)] max-w-[620px] -translate-x-1/2 -translate-y-full rounded-[1.5rem] border border-white/10 bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl transition-opacity duration-200 md:w-auto md:min-w-[520px] ${
+              isOpen
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <div className="flex gap-2 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+              {pages.map((page) => (
+                <Link
+                  key={page}
+                  href={getPageHref(
+                    basePath,
+                    page,
+                  )}
+                  className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border text-xs font-black transition-colors duration-300 ${
+                    page === currentPage
+                      ? "border-amber-400 bg-amber-400 text-black"
+                      : "border-white/10 bg-white/[0.03] text-white hover:border-amber-400/40 hover:text-amber-300"
+                  }`}
+                >
+                  {page}
+                </Link>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
+  return (
+    <>
       <div
-        style={{
-          top: panelTop,
-          left: "50%",
-        }}
-        className={`fixed z-50 w-[calc(100vw-32px)] max-w-[620px] -translate-x-1/2 -translate-y-full rounded-[1.5rem] bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-300 md:w-auto md:min-w-[520px] ${
-        isOpen
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
+        ref={wrapperRef}
+        className="relative"
+        onMouseEnter={openFromButton}
+        onMouseLeave={scheduleHoverClose}
       >
-        <div className="flex gap-2 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
-          {pages.map((page) => (
-            <Link
-              key={page}
-              href={page === 1 ? "/blog" : `/blog?page=${page}`}
-              className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border text-xs font-black transition duration-300 hover:-translate-y-0.5 ${
-                page === currentPage
-                  ? "border-amber-400 bg-amber-400 text-black"
-                  : "border-white/10 bg-white/[0.03] text-white hover:border-amber-400/40 hover:text-amber-300"
-              }`}
-            >
-              {page}
-            </Link>
-          ))}
-        </div>
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={handleDotsClick}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-gray-400 transition-colors duration-300 hover:border-amber-400/40 hover:text-amber-300"
+          aria-label="Arată toate paginile"
+          aria-expanded={isOpen}
+        >
+          ...
+        </button>
       </div>
-    </div>
+
+      {panel}
+    </>
   );
 }

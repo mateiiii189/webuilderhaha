@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Clock3,
   Mail,
-  MapPin,
   Phone,
   Video,
 } from "lucide-react";
@@ -21,11 +20,9 @@ import { siteConfig } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact | Webuilder.ro",
   description:
-    "Solicită o ofertă sau programează o întâlnire online prin Google Meet ori o întâlnire fizică cu Webuilder.ro.",
+    "Solicită o ofertă sau programează o consultație online prin Google Meet cu Webuilder.ro.",
 };
 
-const physicalBookingUrl =
-  process.env.NEXT_PUBLIC_GOOGLE_BOOKING_PHYSICAL_URL || "#";
 
 const offerDetails = [
   "tipul firmei și serviciile principale",
@@ -57,13 +54,14 @@ export default function ContactPage() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-gray-300 md:text-lg">
-              Programează o întâlnire online prin Google Meet, o discuție
-              fizică sau trimite-ne direct detaliile proiectului.
+              Programează o consultație online prin Google Meet sau
+              trimite-ne direct detaliile proiectului.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <SmoothScrollLink
                 targetId="programare"
+                resetScrollOnMount
                 offset={110}
                 duration={1100}
                 className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-3.5 text-sm font-bold text-black transition duration-500 hover:-translate-y-0.5 hover:bg-amber-300"
@@ -95,145 +93,126 @@ export default function ContactPage() {
             </p>
 
             <h2 className="text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl">
-              Alege cum vrei să discutăm
+              Programează o consultație online
             </h2>
 
             <p className="mt-6 max-w-3xl text-base leading-8 text-gray-300 md:text-lg">
-              Alegi tipul întâlnirii, ziua și ora disponibile direct din
-              calendar.
+              Alegi ziua și ora disponibile direct din calendar, iar
+              linkul Google Meet este creat automat.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
-            <Card className="group relative flex h-full flex-col overflow-hidden border-amber-400/35 bg-amber-400/[0.055] transition duration-500 hover:-translate-y-1 hover:border-amber-400/60 hover:bg-amber-400/[0.08]">
-              <div className="absolute right-0 top-0 h-44 w-44 rounded-full bg-amber-400/10 blur-3xl" />
+          <Card className="group relative mt-12 overflow-hidden border-white/10 bg-[linear-gradient(135deg,#11161D_0%,#0F141B_58%,#0D1218_100%)] transition duration-500 hover:-translate-y-1 hover:border-amber-400/40">
+            <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-amber-400/[0.08] blur-3xl" />
 
-              <div className="relative">
-                <div className="flex items-start justify-between gap-5">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/35 bg-amber-400/10 text-amber-300">
-                    <Video className="h-7 w-7" strokeWidth={2} />
+            <div className="relative grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="group/camera flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/35 bg-amber-400/10 text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/60 hover:bg-white/[0.05]">
+                    <Video
+                      className="h-7 w-7 transition duration-300"
+                      strokeWidth={2}
+                    />
                   </div>
 
-                  <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-bold text-amber-300">
-                    Recomandat
+                  <span className="group/consultation inline-flex h-14 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 px-6 text-sm font-bold text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/60 hover:bg-white/[0.05] hover:text-amber-200">
+                    Consultație online
                   </span>
                 </div>
 
-                <h3 className="mt-7 text-3xl font-bold leading-tight tracking-tight text-white">
-                  Întâlnire pe Google Meet
+                <h3 className="mt-7 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
+                  30 de minute pentru a pune proiectul pe direcția corectă
                 </h3>
 
-                <p className="mt-4 max-w-xl text-sm leading-7 text-gray-300">
+                <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-300 md:text-base">
                   Discutăm despre firmă, obiective, structură, funcționalități
-                  și pașii necesari pentru dezvoltarea proiectului tău online.
+                  și pașii necesari pentru dezvoltarea proiectului. Pleci din
+                  întâlnire cu o direcție clară și următorii pași stabiliți.
                 </p>
 
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300">
-                    <Clock3 className="h-4 w-4 text-amber-300" />
+                  <span className="group/pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/35 hover:bg-white/[0.06] hover:text-white">
+                    <Clock3 className="h-4 w-4 text-amber-300 transition duration-300" />
                     30 minute
                   </span>
 
-                  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300">
-                    <Video className="h-4 w-4 text-amber-300" />
+                  <span className="group/pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/35 hover:bg-white/[0.06] hover:text-white">
+                    <Video className="h-4 w-4 text-amber-300 transition duration-300" />
                     Google Meet
+                  </span>
+
+                  <span className="group/pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/35 hover:bg-white/[0.06] hover:text-white">
+                    <CalendarDays className="h-4 w-4 text-amber-300 transition duration-300" />
+                    Luni–vineri
                   </span>
                 </div>
 
-                <ul className="mt-7 space-y-3 text-sm text-gray-300">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                    Alegi ziua și ora disponibile
-                  </li>
+                <div className="mt-8">
+                  <Link
+                    href="/programare"
+                    className="group/button inline-flex h-12 items-center justify-center gap-2 rounded-full bg-amber-400 px-7 text-sm font-bold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                  >
+                    Vezi programul disponibil
 
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                    Linkul Google Meet este creat automat
-                  </li>
-
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                    Primești detaliile pe email
-                  </li>
-                </ul>
+                    <ArrowUpRight
+                      className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5"
+                      strokeWidth={2.2}
+                    />
+                  </Link>
+                </div>
               </div>
 
-              <div className="relative mt-auto pt-8">
-                <Link
-                  href="/programare"
-                  className="group/button inline-flex h-12 items-center justify-center gap-2 rounded-full bg-amber-400 px-6 text-sm font-bold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
-                >
-                  Programează online
+              <div className="relative border-t border-white/10 pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+                <div className="rounded-[24px] border border-white/10 bg-[#0D1218] p-5 sm:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
+                    Cum funcționează
+                  </p>
 
-                  <ArrowUpRight
-                    className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5"
-                    strokeWidth={2.2}
-                  />
-                </Link>
+                  <div className="mt-5 space-y-3">
+                    {[
+                      {
+                        index: "01",
+                        title: "Alegi intervalul",
+                        description:
+                          "Selectezi ziua și ora disponibile direct din calendar.",
+                      },
+                      {
+                        index: "02",
+                        title: "Verifici emailul",
+                        description:
+                          "Confirmi adresa prin codul unic primit pe email.",
+                      },
+                      {
+                        index: "03",
+                        title: "Primești confirmarea",
+                        description:
+                          "Linkul Google Meet și toate detaliile ajung automat.",
+                      },
+                    ].map((step) => (
+                      <div
+                        key={step.index}
+                        className="group/step flex gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition duration-300 hover:border-amber-400/40"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-xs font-black text-amber-300 transition duration-300">
+                          {step.index}
+                        </span>
+
+                        <div>
+                          <p className="text-sm font-semibold text-white">
+                            {step.title}
+                          </p>
+
+                          <p className="mt-1 text-sm leading-6 text-gray-400">
+                            {step.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </Card>
-
-            <Card className="group flex h-full flex-col transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.05]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-amber-300 transition duration-500 group-hover:border-amber-400/35 group-hover:bg-amber-400/10">
-                <MapPin className="h-7 w-7" strokeWidth={2} />
-              </div>
-
-              <h3 className="mt-7 text-3xl font-bold leading-tight tracking-tight text-white">
-                Întâlnire fizică
-              </h3>
-
-              <p className="mt-4 max-w-xl text-sm leading-7 text-gray-300">
-                Discutăm în persoană despre proiect, obiective, structură,
-                funcționalități și toate detaliile care necesită o analiză mai
-                aprofundată.
-              </p>
-
-              <div className="mt-7 flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300">
-                  <Clock3 className="h-4 w-4 text-amber-300" />
-                  45 minute
-                </span>
-
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300">
-                  <MapPin className="h-4 w-4 text-amber-300" />
-                  București
-                </span>
-              </div>
-
-              <ul className="mt-7 space-y-3 text-sm text-gray-300">
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                  Alegi intervalul disponibil
-                </li>
-
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                  Locația se confirmă după programare
-                </li>
-
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-400" />
-                  Primești confirmarea pe email
-                </li>
-              </ul>
-
-              <div className="mt-auto pt-8">
-                <a
-                  href={physicalBookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group/button inline-flex h-12 items-center justify-center gap-2 rounded-full bg-amber-400 px-6 text-sm font-bold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
-                >
-                  Programează întâlnirea
-
-                  <ArrowUpRight
-                    className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5"
-                    strokeWidth={2.2}
-                  />
-                </a>
-              </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </Container>
       </section>
 
