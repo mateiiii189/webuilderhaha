@@ -6,21 +6,14 @@ body {
     "Segoe UI", sans-serif;
 }
 
-/* Global headings - Webuilder style */
-main h1 {
-  @apply text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl;
-}
+@layer base {
+  main h1 {
+    @apply text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl;
+  }
 
-/* main h2 {
-  @apply text-4xl font-black leading-[1] tracking-tight text-white md:text-5xl;
-} */
-
-/* main h3 {
-  @apply text-2xl font-black leading-tight tracking-tight text-white md:text-3xl;
-} */
-
-main p {
-  @apply leading-8 text-gray-400;
+  main p {
+    @apply leading-8 text-gray-400;
+  }
 }
 
 :root {

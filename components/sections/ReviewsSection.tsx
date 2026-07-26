@@ -77,8 +77,7 @@ export async function ReviewsSection() {
             <div className="mt-12 grid gap-4 md:grid-cols-3">
               <Card className="p-5 md:col-span-2">
                 <p className="text-sm leading-6 text-gray-300">
-                  Momentan nu există review-uri. Review-urile adăugate în
-                  Sanity Studio vor apărea automat aici.
+                  Momentan nu există review-uri.
                 </p>
               </Card>
             </div>

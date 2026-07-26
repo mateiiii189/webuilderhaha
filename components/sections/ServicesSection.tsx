@@ -56,17 +56,6 @@ const stages = [
   },
 ];
 
-const capabilities = [
-  "Website-uri de prezentare",
-  "Landing pages",
-  "Magazine online",
-  "Platforme web",
-  "Sisteme de programări",
-  "Integrări CRM",
-  "Automatizări",
-  "Redesign",
-];
-
 export function ServicesSection() {
   return (
     <section className="relative overflow-hidden border-t border-white/10 bg-[#080B10] py-20 md:py-24">
@@ -151,53 +140,6 @@ export function ServicesSection() {
             })}
           </div>
         </div>
-
-        <ScrollReveal delay={0.16}>
-          <div className="group/capabilities mt-6 rounded-[2rem] border border-white/10 bg-[#0D1218] p-6 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-[#10161E] md:p-8">
-            <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-400">
-                  Capabilități
-                </p>
-
-                <h3 className="mt-4 text-3xl font-black leading-[1] tracking-[-0.045em] text-white">
-                  Construim mai mult decât un simplu website.
-                </h3>
-
-                <p className="mt-4 max-w-xl text-sm leading-7 text-gray-400">
-                  Alegem combinația potrivită în funcție de obiectivele,
-                  procesele și etapa în care se află afacerea.
-                </p>
-              </div>
-
-              <div>
-                <div className="flex flex-wrap gap-3 lg:justify-end">
-                  {capabilities.map((capability) => (
-                    <span
-                      key={capability}
-                      className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-white/[0.06] hover:text-white"
-                    >
-                      {capability}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-5 flex lg:justify-end">
-                  <Link
-                    href="/servicii"
-                    className="group/more inline-flex items-center gap-2 text-sm font-black text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:text-amber-300"
-                  >
-                    Vezi mai multe
-
-                    <span className="transition duration-300 group-hover/more:translate-x-1">
-                      →
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
       </Container>
     </section>
   );

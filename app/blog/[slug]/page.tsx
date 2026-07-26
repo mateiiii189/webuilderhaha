@@ -3,13 +3,14 @@ import Link from "next/link";
 import { cache } from "react";
 import { MdVerified } from "react-icons/md";
 import { SmoothScrollLink } from "@/components/ui/SmoothScrollLink";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { siteConfig } from "@/lib/site";
 import { Container } from "@/components/layout/Container";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { PortableTextRenderer } from "@/components/blog/PortableTextRenderer";
+import { ArticleSearchHighlighter } from "@/components/blog/ArticleSearchHighlighter";
 import { BlogShareButtons } from "@/components/blog/BlogShareButtons";
 
 type Post = {
@@ -39,7 +40,13 @@ type TocItem = {
 };
 
 const postQuery = `
-  *[_type == "post" && slug.current == $slug][0] {
+  *[
+    _type == "post" &&
+    (
+      slug.current == $slug ||
+      ($id != "" && _id == $id)
+    )
+  ][0] {
     _id,
     title,
     "slug": slug.current,
@@ -74,17 +81,23 @@ const recommendedPostsQuery = `
   }
 `;
 
-const getPost = cache(async (slug: string) => {
-  return client.fetch<Post | null>(
-    postQuery,
-    { slug },
-    {
-      next: {
-        tags: ["posts"],
+const getPost = cache(
+  async (
+    slug: string,
+    id = "",
+  ) => {
+    return client.fetch<Post | null>(
+      postQuery,
+      {
+        slug,
+        id,
       },
-    }
-  );
-});
+      {
+        cache: "no-store",
+      },
+    );
+  },
+);
 
 const getRecommendedPosts = cache(async (postType: string, slug: string) => {
   return client.fetch<Post[]>(
@@ -105,7 +118,21 @@ type PageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    highlight?: string;
+    post?: string;
+  }>;
 };
+
+function decodeRouteSegment(
+  value: string,
+) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
 function getPostTypeLabel(type: string) {
   if (type === "seo") return "Ghid";
@@ -166,9 +193,17 @@ function formatPostDate(date: string) {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const resolvedSearchParams =
+    await searchParams;
+
+  const post = await getPost(
+    decodeRouteSegment(slug),
+    resolvedSearchParams?.post?.trim() ||
+      "",
+  );
 
   if (!post) {
     return {
@@ -203,12 +238,26 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
+export default async function BlogPostPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const resolvedSearchParams =
+    await searchParams;
+
+  const highlightQuery =
+    resolvedSearchParams?.highlight?.trim() ||
+    "";
+
+  const post = await getPost(
+    decodeRouteSegment(slug),
+    resolvedSearchParams?.post?.trim() ||
+      "",
+  );
 
   if (!post) {
-    redirect("/404");
+    notFound();
   }
 
   const body = post.body || [];
@@ -218,7 +267,14 @@ export default async function BlogPostPage({ params }: PageProps) {
   const recommendedPosts = await getRecommendedPosts(post.postType, post.slug);
 
   return (
-    <main className="min-h-screen bg-[#0B0F14] text-white">
+    <main
+      id="blog-article-page"
+      className="min-h-screen bg-[#0B0F14] text-white"
+    >
+      <ArticleSearchHighlighter
+        query={highlightQuery}
+        rootId="blog-article-page"
+      />
       <section className="relative overflow-hidden border-b border-white/10 bg-[#0B0F14] pt-36 pb-20 md:pt-40 md:pb-24">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px] opacity-25" />
         <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-amber-400/15 blur-[90px]" />
@@ -227,7 +283,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         <Container className="relative">
           <ScrollReveal>
-            <article className="max-w-[980px]">
+            <article
+              data-search-highlight-scope
+              className="max-w-[980px]"
+            >
               <Link
                 href="/blog"
                 className="group inline-flex w-fit items-center gap-2 text-sm font-semibold text-gray-300 transition-all duration-300 hover:-translate-y-0.5 hover:text-amber-300"
@@ -298,7 +357,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
         <div className="relative mx-auto grid w-full max-w-7xl gap-10 xl:grid-cols-[minmax(0,1fr)_330px]">
           <ScrollReveal>
-            <article className="w-full min-w-0 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 md:p-10 xl:p-12">
+            <article
+              data-search-highlight-scope
+              className="w-full min-w-0 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 md:p-10 xl:p-12"
+            >
               <PortableTextRenderer value={body} />
             </article>
           </ScrollReveal>

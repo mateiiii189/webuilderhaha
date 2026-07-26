@@ -1,4 +1,7 @@
+import { loadEnvConfig } from "@next/env";
 import { createClient } from "@sanity/client";
+
+loadEnvConfig(process.cwd());
 
 type SeedCommand = "seed" | "delete";
 
@@ -90,7 +93,11 @@ function pad(value: number): string {
   return String(value).padStart(3, "0");
 }
 
-function createReview(index: number): DemoReview {
+function createReview(
+  index: number,
+  count: number,
+  baseTimestamp: number,
+): DemoReview {
   const number = index + 1;
 
   const project =
@@ -105,9 +112,21 @@ function createReview(index: number): DemoReview {
   const impact =
     IMPACT[(index * 5) % IMPACT.length];
 
+  /*
+   * Ordinea corectă:
+   * review-demo-001 = cel mai vechi
+   * ultimul review  = cel mai recent
+   *
+   * Query-ul paginii poate rămâne:
+   * order(coalesce(publishedAt, _createdAt) desc, _createdAt desc, _id desc)
+   */
   const publishedAt = new Date(
-    Date.now() -
-      index * 24 * 60 * 60 * 1000,
+    baseTimestamp -
+      (count - 1 - index) *
+        24 *
+        60 *
+        60 *
+        1000,
   ).toISOString();
 
   return {
@@ -120,7 +139,7 @@ function createReview(index: number): DemoReview {
       `[TEST ${pad(number)}] Colaborarea a fost ${collaboration}. ` +
       `Am primit ${result}, iar acum ${impact}.`,
     publishedAt,
-    isPinned: number === 1,
+    isPinned: number === count,
   };
 }
 
@@ -156,9 +175,16 @@ async function seedReviews(
     );
   }
 
+  const baseTimestamp = Date.now();
+
   const documents = Array.from(
     { length: count },
-    (_, index) => createReview(index),
+    (_, index) =>
+      createReview(
+        index,
+        count,
+        baseTimestamp,
+      ),
   );
 
   const chunks = splitIntoChunks(

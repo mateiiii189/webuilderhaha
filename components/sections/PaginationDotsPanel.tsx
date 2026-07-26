@@ -94,10 +94,11 @@ export function PaginationDotsPanel({
 
     setPosition({
       /*
-       * Panoul se suprapune cu 4px peste partea de sus a
-       * butonului. Astfel nu există nicio zonă moartă între ele.
+       * Wrapperul transparent se suprapune ușor peste buton,
+       * iar panoul vizibil rămâne mai sus. Astfel nu există
+       * nicio zonă moartă când muți cursorul între ele.
        */
-      top: Math.max(16, rect.top + 4),
+      top: Math.max(24, rect.top + 6),
       left:
         rect.left + rect.width / 2,
     });
@@ -128,7 +129,7 @@ export function PaginationDotsPanel({
       setTimeout(() => {
         setHoverOpen(false);
         closeTimerRef.current = null;
-      }, 280);
+      }, 110);
   }
 
   function handleDotsClick() {
@@ -228,35 +229,40 @@ export function PaginationDotsPanel({
       ? createPortal(
           <div
             ref={panelRef}
-            onMouseEnter={keepPanelOpen}
-            onMouseLeave={scheduleHoverClose}
+            onPointerEnter={keepPanelOpen}
+            onPointerLeave={scheduleHoverClose}
             style={{
               top: position.top,
               left: position.left,
+              transform: isOpen
+                ? "translate(-50%, -100%) translateY(0) scale(1)"
+                : "translate(-50%, -100%) translateY(8px) scale(0.97)",
             }}
-            className={`fixed z-[100] w-[calc(100vw-32px)] max-w-[620px] -translate-x-1/2 -translate-y-full rounded-[1.5rem] border border-white/10 bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl transition-opacity duration-200 md:w-auto md:min-w-[520px] ${
+            className={`fixed z-[100] w-[calc(100vw-32px)] max-w-[620px] origin-bottom pb-[18px] transition-[opacity,transform] duration-200 ease-out md:w-auto md:min-w-[520px] ${
               isOpen
                 ? "pointer-events-auto opacity-100"
                 : "pointer-events-none opacity-0"
             }`}
           >
-            <div className="flex gap-2 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
-              {pages.map((page) => (
-                <Link
-                  key={page}
-                  href={getPageHref(
-                    basePath,
-                    page,
-                  )}
-                  className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border text-xs font-black transition-colors duration-300 ${
-                    page === currentPage
-                      ? "border-amber-400 bg-amber-400 text-black"
-                      : "border-white/10 bg-white/[0.03] text-white hover:border-amber-400/40 hover:text-amber-300"
-                  }`}
-                >
-                  {page}
-                </Link>
-              ))}
+            <div className="rounded-[1.5rem] border border-white/10 bg-[#0B0F14]/95 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl">
+              <div className="flex gap-2 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] [-ms-overflow-style:none] md:grid md:max-h-[260px] md:grid-cols-10 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+                {pages.map((page) => (
+                  <Link
+                    key={page}
+                    href={getPageHref(
+                      basePath,
+                      page,
+                    )}
+                    className={`flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full border text-xs font-black transition-colors duration-300 ${
+                      page === currentPage
+                        ? "border-amber-400 bg-amber-400 text-black"
+                        : "border-white/10 bg-white/[0.03] text-white hover:border-amber-400/40 hover:text-amber-300"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>,
           document.body,
@@ -268,8 +274,8 @@ export function PaginationDotsPanel({
       <div
         ref={wrapperRef}
         className="relative"
-        onMouseEnter={openFromButton}
-        onMouseLeave={scheduleHoverClose}
+        onPointerEnter={openFromButton}
+        onPointerLeave={scheduleHoverClose}
       >
         <button
           ref={buttonRef}

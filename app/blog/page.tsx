@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Clock3,
-} from "lucide-react";
+import { Clock3 } from "lucide-react";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { Container } from "@/components/layout/Container";
+import { FixedPageHero } from "@/components/layout/FixedPageHero";
+import { BlogHeroSearch } from "@/components/blog/BlogHeroSearch";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { PaginationDotsPanel } from "@/components/sections/PaginationDotsPanel";
 
@@ -21,6 +20,7 @@ type Post = {
   title: string;
   slug: string;
   excerpt?: string;
+  body?: unknown;
   publishedAt?: string;
   _createdAt: string;
   postType: string;
@@ -44,8 +44,8 @@ type TruncatedText = {
 
 const FIRST_PAGE_POSTS = 7;
 const OTHER_PAGE_POSTS = 6;
-const FEATURED_TITLE_LIMIT = 120;
-const FEATURED_EXCERPT_LIMIT = 300;
+const FEATURED_TITLE_LIMIT = 92;
+const FEATURED_EXCERPT_LIMIT = 190;
 const CARD_TITLE_LIMIT = 86;
 const CARD_EXCERPT_LIMIT = 185;
 
@@ -60,6 +60,7 @@ const postsQuery = `
     title,
     "slug": slug.current,
     excerpt,
+    body,
     publishedAt,
     _createdAt,
     postType,
@@ -76,6 +77,57 @@ function getPostTypeLabel(type: string) {
   if (type === "update") return "Update";
 
   return "Articol";
+}
+
+function portableTextToPlainText(
+  value: unknown,
+): string {
+  if (!Array.isArray(value)) {
+    return "";
+  }
+
+  return value
+    .map((block) => {
+      if (
+        !block ||
+        typeof block !== "object"
+      ) {
+        return "";
+      }
+
+      const children = (
+        block as {
+          children?: unknown;
+        }
+      ).children;
+
+      if (!Array.isArray(children)) {
+        return "";
+      }
+
+      return children
+        .map((child) => {
+          if (
+            !child ||
+            typeof child !== "object"
+          ) {
+            return "";
+          }
+
+          const text = (
+            child as {
+              text?: unknown;
+            }
+          ).text;
+
+          return typeof text === "string"
+            ? text
+            : "";
+        })
+        .join("");
+    })
+    .filter(Boolean)
+    .join(" ");
 }
 
 function truncateText(
@@ -266,6 +318,8 @@ export default async function BlogPage({
       ]
     : posts;
 
+  const heroPost = sortedPosts[0];
+
   const totalPages = Math.max(
     getTotalPages(sortedPosts.length),
     1,
@@ -283,14 +337,10 @@ export default async function BlogPage({
     );
 
   /*
-   * Cardul lat există exclusiv pe pagina 1.
-   * Paginile 2+ conțin câte 6 carduri normale.
+   * Articolul pinned sau cel mai recent este afișat în hero.
+   * Pagina 1 păstrează dedesubt următoarele 6 articole,
+   * iar paginile următoare afișează câte 6.
    */
-  const featuredPost =
-    safeCurrentPage === 1
-      ? paginatedPosts[0]
-      : undefined;
-
   const otherPosts =
     safeCurrentPage === 1
       ? paginatedPosts.slice(1)
@@ -302,136 +352,147 @@ export default async function BlogPage({
       totalPages,
     );
 
-  const featuredTitle = featuredPost
+  const featuredTitle = heroPost
     ? truncateText(
-        featuredPost.title,
+        heroPost.title,
         FEATURED_TITLE_LIMIT,
       )
     : null;
 
-  const featuredExcerpt = featuredPost
+  const featuredExcerpt = heroPost
     ? truncateText(
-        featuredPost.excerpt,
+        heroPost.excerpt,
         FEATURED_EXCERPT_LIMIT,
       )
     : null;
 
+  const searchPosts = sortedPosts.map(
+    (post) => ({
+      id: post._id,
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      body: portableTextToPlainText(
+        post.body,
+      ),
+      category: post.category?.title,
+      type: getPostTypeLabel(
+        post.postType,
+      ),
+    }),
+  );
+
   return (
     <main className="min-h-screen bg-[#0B0F14] text-white">
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#0B0F14] pb-20 pt-40">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px] opacity-25" />
-        <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-400/15 blur-3xl" />
+      <FixedPageHero
+        eyebrow="Webuilder Blog"
+        title={
+          <>
+            Idei clare despre website-uri, SEO și prezență online.
+          </>
+        }
+        description={
+          <>
+            Ghiduri practice pentru firme care vor un website mai clar, mai
+            rapid și mai ușor de transformat în cereri reale.
+          </>
+        }
+        bottom={
+          <BlogHeroSearch
+            posts={searchPosts}
+          />
+        }
+        aside={
+          heroPost &&
+          featuredTitle &&
+          featuredExcerpt ? (
+            <Link
+              href={`/blog/${encodeURIComponent(
+                heroPost.slug,
+              )}`}
+              className="group relative isolate flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[2rem] border border-amber-400/35 bg-[#11161D] shadow-2xl shadow-black/30 transition duration-500 [transform:translateZ(0)] hover:-translate-y-1 hover:border-amber-400/55"
+            >
+              {heroPost.isPinned ? (
+                <PinnedArticleBadge />
+              ) : (
+                <RecentArticleBadge />
+              )}
 
-        <Container className="relative">
-          <ScrollReveal>
-            <div className="max-w-5xl">
-              <p className="mb-5 border-l-4 border-amber-400 pl-4 text-sm font-bold uppercase tracking-[0.28em] text-amber-300">
-                Webuilder Blog
-              </p>
+              <div className="relative -mb-1 h-[269px] shrink-0 overflow-hidden bg-[#11161D] [transform:translateZ(0)]">
+                {heroPost.coverImage ? (
+                  <img
+                    src={urlFor(
+                      heroPost.coverImage,
+                    )
+                      .width(1200)
+                      .height(700)
+                      .url()}
+                    alt={heroPost.title}
+                    className="block h-full w-full object-cover object-center opacity-92 transition duration-500 [transform:translateZ(0)] group-hover:opacity-100"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:48px_48px]">
+                    <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] text-amber-300">
+                      Webuilder
+                    </span>
+                  </div>
+                )}
 
-              <h1 className="max-w-4xl text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl">
-                Idei clare despre website-uri, SEO și prezență online.
-              </h1>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#11161D] via-transparent to-transparent" />
+              </div>
 
-              <p className="mt-6 max-w-2xl text-base leading-8 text-gray-400 md:text-lg">
-                Ghiduri practice pentru firme care vor un website mai clar, mai
-                rapid și mai ușor de transformat în cereri reale.
-              </p>
-            </div>
-          </ScrollReveal>
-        </Container>
-      </section>
+              <div className="relative z-10 flex min-h-0 flex-1 flex-col bg-[#11161D] p-6">
+                <div className="min-h-0 overflow-hidden">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black">
+                      {getPostTypeLabel(
+                        heroPost.postType,
+                      )}
+                    </span>
+
+                    {heroPost.category?.title ? (
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-300">
+                        {heroPost.category.title}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <h2 className="mt-4 break-words text-[1.7rem] font-black leading-[1.02] tracking-[-0.04em] text-white [overflow-wrap:anywhere]">
+                    {featuredTitle.value}
+                  </h2>
+
+                  {featuredExcerpt.value ? (
+                    <p className="mt-3 break-words text-sm leading-6 text-gray-400 [overflow-wrap:anywhere]">
+                      {featuredExcerpt.value}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="mt-auto flex shrink-0 items-center justify-between gap-5 border-t border-white/10 pt-4">
+                  <time className="text-xs font-medium text-gray-500">
+                    {formatPostDate(
+                      heroPost,
+                    )}
+                  </time>
+
+                  <span className="inline-flex shrink-0 items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-amber-300 transition duration-300 group-hover:text-amber-200">
+                    Citește articolul
+
+                    <span className="inline-block text-lg leading-none transition duration-500 group-hover:translate-x-1">
+                      →
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ) : null
+        }
+      />
 
       <section className="bg-[#080B10] py-24">
         <Container>
           {paginatedPosts.length > 0 ? (
             <div className="space-y-10">
-              {featuredPost &&
-              featuredTitle &&
-              featuredExcerpt ? (
-                <ScrollReveal>
-                  <Link
-                    href={`/blog/${featuredPost.slug}`}
-                    className="group relative grid overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/30 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.055] md:grid-cols-[1.1fr_0.9fr]"
-                  >
-                    {featuredPost.isPinned ? (
-                      <PinnedArticleBadge />
-                    ) : (
-                      <RecentArticleBadge />
-                    )}
-
-                    <div className="relative min-h-[340px] overflow-hidden bg-[#11161D] md:min-h-[460px]">
-                      {featuredPost.coverImage ? (
-                        <img
-                          src={urlFor(
-                            featuredPost.coverImage,
-                          )
-                            .width(1200)
-                            .height(800)
-                            .url()}
-                          alt={featuredPost.title}
-                          className="h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-100"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:48px_48px]">
-                          <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] text-amber-300">
-                            Webuilder
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex min-w-0 flex-col p-7 md:p-10">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-black">
-                            {getPostTypeLabel(
-                              featuredPost.postType,
-                            )}
-                          </span>
-
-                          {featuredPost.category
-                            ?.title ? (
-                            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-gray-300">
-                              {
-                                featuredPost
-                                  .category.title
-                              }
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <h2 className="mt-6 break-words text-4xl font-black leading-[1] tracking-tight text-white [overflow-wrap:anywhere] md:text-5xl">
-                          {featuredTitle.value}
-                        </h2>
-
-                        {featuredExcerpt.value ? (
-                          <p className="mt-5 break-words text-base leading-8 text-gray-400 [overflow-wrap:anywhere]">
-                            {
-                              featuredExcerpt.value
-                            }
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <div className="mt-auto flex items-center justify-between gap-5 border-t border-white/10 pt-5">
-                        <time className="text-sm font-medium text-gray-500">
-                          {formatPostDate(
-                            featuredPost,
-                          )}
-                        </time>
-
-                        <span className="group/read inline-flex shrink-0 items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-amber-300 transition duration-300 group-hover:text-amber-200">
-                          Citește articolul
-
-                          <ArrowRight className="h-4 w-4 transition duration-300 group-hover/read:translate-x-1" />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </ScrollReveal>
-              ) : null}
-
               {otherPosts.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-3">
                   {otherPosts.map(
@@ -517,10 +578,12 @@ export default async function BlogPage({
                               ) : null}
 
                               <div className="mt-auto pt-6">
-                                <span className="group/read inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-amber-300 transition duration-300 group-hover:text-amber-200">
+                                <span className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-amber-300 transition duration-300 group-hover:text-amber-200">
                                   Citește articolul
 
-                                  <ArrowRight className="h-4 w-4 transition duration-300 group-hover/read:translate-x-1" />
+                                  <span className="inline-block text-lg leading-none transition duration-500 group-hover:translate-x-1">
+                                    →
+                                  </span>
                                 </span>
                               </div>
                             </div>
@@ -635,11 +698,14 @@ function PinnedArticleBadge({
 function RecentArticleBadge() {
   return (
     <div
-      className="absolute right-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/40 bg-[#0B0F14]/95 text-amber-300 shadow-lg shadow-black/30"
+      className="absolute right-5 top-5 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-[#0B0F14]/95 text-amber-300 shadow-lg shadow-black/30"
       title="Cel mai recent"
       aria-label="Cel mai recent"
     >
-      <Clock3 className="h-5 w-5" />
+      <Clock3
+        className="h-5 w-5"
+        strokeWidth={2.4}
+      />
     </div>
   );
 }

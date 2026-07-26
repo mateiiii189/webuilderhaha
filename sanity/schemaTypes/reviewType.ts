@@ -52,6 +52,21 @@ export const reviewType = defineType({
       type: "boolean",
       initialValue: true,
     }),
+    defineField({
+      name: "websiteUrl",
+      title: "Client Website URL",
+      type: "url",
+      description:
+        "Website-ul construit pentru client. Logo-ul și numele companiei vor trimite către acest URL.",
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: [
+            "http",
+            "https",
+          ],
+          allowRelative: false,
+        }),
+    }),
 
     defineField({
       name: "isPinned",

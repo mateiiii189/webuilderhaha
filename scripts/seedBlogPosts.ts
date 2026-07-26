@@ -78,19 +78,33 @@ function createHeading(text: string) {
 
 async function seedPosts() {
   const totalPosts = 100;
+  const baseTimestamp = Date.now();
 
-  console.log(`Creating ${totalPosts} blog posts...`);
+  console.log(`Creating or updating ${totalPosts} blog posts...`);
 
   for (let index = 1; index <= totalPosts; index += 1) {
     const title = `Test articol ${index}`;
     const slug = slugify(title);
     const postType = postTypes[index % postTypes.length];
 
+    /*
+     * Ordinea corectă:
+     * Test articol 1   = cel mai vechi
+     * Test articol 100 = cel mai recent
+     *
+     * Query-ul paginii poate rămâne:
+     * order(coalesce(publishedAt, _createdAt) desc, _createdAt desc, _id desc)
+     */
     const publishedAt = new Date(
-      Date.now() - index * 1000 * 60 * 60 * 24
+      baseTimestamp -
+        (totalPosts - index) *
+          1000 *
+          60 *
+          60 *
+          24
     ).toISOString();
 
-    await client.createIfNotExists({
+    await client.createOrReplace({
       _id: `post-test-${index}`,
       _type: "post",
       title,
@@ -121,7 +135,7 @@ async function seedPosts() {
       ],
     });
 
-    console.log(`Created: ${title}`);
+    console.log(`Created or updated: ${title}`);
   }
 
   console.log("Done.");

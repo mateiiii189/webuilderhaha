@@ -11,6 +11,7 @@ import {
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { Container } from "@/components/layout/Container";
+import { FixedPageHero } from "@/components/layout/FixedPageHero";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { PaginationDotsPanel } from "@/components/sections/PaginationDotsPanel";
 
@@ -25,6 +26,7 @@ type ReviewFromSanity = {
   company: string;
   brandImage?: unknown;
   project?: string;
+  websiteUrl?: string;
   rating?: number;
   text: string;
   publishedAt?: string;
@@ -37,6 +39,7 @@ type Review = {
   company: string;
   brandImageUrl?: string;
   project: string;
+  websiteUrl?: string;
   rating: number;
   text: string;
   publishedAt?: string;
@@ -51,7 +54,7 @@ type TestimonialsPageProps = {
 };
 
 const REVIEWS_PER_PAGE = 6;
-const FEATURED_REVIEW_PREVIEW_LENGTH = 360;
+const FEATURED_REVIEW_PREVIEW_LENGTH = 970;
 const REVIEW_CARD_PREVIEW_LENGTH = 220;
 
 const reviewsQuery = `
@@ -65,6 +68,7 @@ const reviewsQuery = `
     company,
     brandImage,
     project,
+    websiteUrl,
     rating,
     text,
     publishedAt,
@@ -177,16 +181,12 @@ function truncateText(
 }
 
 function getEffectiveReviewTimestamp(
-  review: Pick<Review, "publishedAt" | "createdAt">,
+  review: Review,
 ): number {
-  const value =
-    review.publishedAt || review.createdAt;
-
-  const timestamp = Date.parse(value);
-
-  return Number.isNaN(timestamp)
-    ? 0
-    : timestamp;
+  return Date.parse(
+    review.publishedAt ||
+      review.createdAt,
+  );
 }
 
 function compareReviewsByPublishedDateDesc(
@@ -226,6 +226,23 @@ function getInitials(company: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+
+function normalizeWebsiteUrl(
+  websiteUrl?: string,
+) {
+  const value = websiteUrl?.trim();
+
+  if (!value) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  return `https://${value}`;
 }
 
 function Stars({
@@ -273,30 +290,43 @@ function BrandMark({
   large?: boolean;
 }) {
   const size = large
-    ? "h-20 w-20 rounded-[1.4rem] text-2xl"
+    ? "h-14 w-14 rounded-[1.1rem] text-lg"
     : "h-14 w-14 rounded-2xl text-lg";
 
-  if (review.brandImageUrl) {
-    return (
-      <div
-        className={`${size} overflow-hidden border border-white/10 bg-white/[0.04]`}
-      >
-        <div
-          className="h-full w-full bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${review.brandImageUrl})`,
-          }}
-        />
-      </div>
-    );
-  }
-
-  return (
+  const mark = review.brandImageUrl ? (
     <div
-      className={`${size} flex items-center justify-center border border-amber-400/30 bg-amber-400/10 font-black text-amber-300`}
+      className={`${size} overflow-hidden border border-white/10 bg-white/[0.04] transition duration-300 group-hover/brand:border-amber-400/45`}
+    >
+      <div
+        className="h-full w-full bg-cover bg-center transition duration-500 group-hover/brand:scale-[1.04]"
+        style={{
+          backgroundImage: `url(${review.brandImageUrl})`,
+        }}
+      />
+    </div>
+  ) : (
+    <div
+      className={`${size} flex items-center justify-center border border-amber-400/30 bg-amber-400/10 font-black text-amber-300 transition duration-300 group-hover/brand:border-amber-400/55 group-hover/brand:bg-amber-400/15`}
     >
       {getInitials(review.company)}
     </div>
+  );
+
+  if (!review.websiteUrl) {
+    return mark;
+  }
+
+  return (
+    <a
+      href={review.websiteUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Vizitează website-ul ${review.company}`}
+      title={`Vizitează website-ul ${review.company}`}
+      className="group/brand block w-fit transition duration-300 hover:-translate-y-0.5"
+    >
+      {mark}
+    </a>
   );
 }
 
@@ -361,6 +391,9 @@ export default async function TestimonialsPage({
           : undefined,
         project:
           review.project || "Website",
+        websiteUrl: normalizeWebsiteUrl(
+          review.websiteUrl,
+        ),
         rating: review.rating ?? 5,
         text: review.text,
         publishedAt: review.publishedAt,
@@ -419,16 +452,18 @@ export default async function TestimonialsPage({
       totalPages,
     );
 
-  const averageRating =
-    reviews.length > 0
-      ? (
-          reviews.reduce(
-            (total, review) =>
-              total + review.rating,
-            0,
-          ) / reviews.length
-        ).toFixed(1)
-      : "5.0";
+  const hasReviews =
+    reviews.length > 0;
+
+  const averageRating = hasReviews
+    ? (
+        reviews.reduce(
+          (total, review) =>
+            total + review.rating,
+          0,
+        ) / reviews.length
+      ).toFixed(1)
+    : null;
 
   const featuredPreview =
     featuredReview
@@ -439,145 +474,161 @@ export default async function TestimonialsPage({
       : null;
 
   return (
-    <main className="min-h-screen bg-[#0B0F14] text-white">
-      <section className="relative overflow-hidden border-b border-white/10 pb-20 pt-36 md:pb-24 md:pt-40">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20" />
-        <div className="absolute left-1/2 top-0 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-amber-400/15 blur-[110px]" />
-        <div className="absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-[#0B0F14] to-transparent" />
-        <div className="absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-[#0B0F14] to-transparent" />
+    <main className="min-h-screen bg-[#0B0F14] text-white [overflow-anchor:none] [scroll-behavior:auto]">
+      <FixedPageHero
+        eyebrow="Testimoniale"
+        title={
+          <>
+            Rezultatele sunt importante. Experiența colaborării la fel.
+          </>
+        }
+        description={
+          <>
+            Aici găsești feedback real din proiectele dezvoltate împreună
+            cu firme și branduri care au avut nevoie de mai multă
+            claritate, performanță și încredere online.
+          </>
+        }
+        bottom={
+          <div className="grid max-w-lg grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex h-[68px] flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2.5 text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30">
+              <p className="text-xs font-semibold leading-none text-gray-300">
+                Colaborări prezentate
+              </p>
 
-        <Container className="relative">
-          <div className="grid gap-12 xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] xl:items-end">
-            <ScrollReveal>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">
-                  Testimoniale
-                </p>
+              <p className="mt-2 text-xl font-black leading-none text-white">
+                {reviews.length}
+              </p>
+            </div>
 
-                <h1 className="mt-5 max-w-4xl text-5xl font-black leading-[0.94] tracking-[-0.06em] text-white md:text-7xl">
-                  Rezultatele sunt importante. Experiența colaborării la fel.
-                </h1>
+            <div className="flex h-[68px] flex-col justify-center rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-2.5 text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30">
+              <p className="text-xs font-semibold leading-none text-gray-300">
+                Rating mediu
+              </p>
 
-                <p className="mt-7 max-w-2xl text-base leading-8 text-gray-300 md:text-lg">
-                  Aici găsești feedback real din proiectele
-                  dezvoltate împreună cu firme și branduri care
-                  au avut nevoie de mai multă claritate,
-                  performanță și încredere online.
-                </p>
-
-                <div className="mt-10 grid max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30">
-                    <p className="text-xs uppercase tracking-[0.2em] text-white/35">
-                      Colaborări prezentate
+              <div className="mt-2 flex min-h-5 items-center gap-2.5">
+                {averageRating ? (
+                  <>
+                    <p className="text-xl font-black leading-none text-white">
+                      {averageRating}
                     </p>
 
-                    <p className="mt-2 text-2xl font-black">
-                      {reviews.length}
-                    </p>
+                    <Stars
+                      rating={Number(
+                        averageRating,
+                      )}
+                    />
+                  </>
+                ) : (
+                  <p className="text-sm font-semibold leading-none text-gray-400">
+                    Fără evaluări
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        }
+        aside={
+          featuredReview ? (
+            <article className="group relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[2rem] border border-amber-400/35 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.15),rgba(17,22,29,0.98)_42%,#11161D_100%)] p-5 shadow-2xl shadow-black/30 transition duration-500 hover:-translate-y-1 hover:border-amber-400/55 md:p-6">
+              <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl" />
+
+              <div className="relative grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto]">
+                <div className="flex min-w-0 items-start justify-between gap-6">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <BrandMark
+                      review={featuredReview}
+                      large
+                    />
+
+                    <div className="min-w-0">
+                      {featuredReview.websiteUrl ? (
+                        <a
+                          href={featuredReview.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group/company inline-flex max-w-full items-center gap-2"
+                        >
+                          <span className="break-words text-base font-black text-white [overflow-wrap:anywhere] md:text-lg">
+                            {featuredReview.company}
+                          </span>
+
+                          <ArrowUpRight className="h-4 w-4 shrink-0 text-amber-300 transition duration-300 group-hover/company:translate-x-0.5 group-hover/company:-translate-y-0.5" />
+                        </a>
+                      ) : (
+                        <p className="break-words text-base font-black text-white [overflow-wrap:anywhere] md:text-lg">
+                          {featuredReview.company}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/30">
-                    <p className="text-xs uppercase tracking-[0.2em] text-white/35">
-                      Rating mediu
-                    </p>
+                  <div className="flex shrink-0 items-center gap-3">
+                    {featuredReview.isPinned ? (
+                      <span className="flex h-10 items-center justify-center rounded-xl border border-amber-400/35 bg-amber-400/10 px-4 text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+                        Pinned
+                      </span>
+                    ) : (
+                      <span
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/35 bg-amber-400/10 text-amber-300"
+                        title="Cel mai recent"
+                        aria-label="Cel mai recent"
+                      >
+                        <Clock3 className="h-5 w-5" />
+                      </span>
+                    )}
 
-                    <div className="mt-2 flex items-center gap-3">
-                      <p className="text-2xl font-black">
-                        {averageRating}
-                      </p>
-
-                      <Stars
-                        rating={Number(
-                          averageRating,
-                        )}
-                      />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
+                      <Quote className="h-5 w-5" />
                     </div>
                   </div>
                 </div>
-              </div>
-            </ScrollReveal>
 
-            {featuredReview ? (
-              <ScrollReveal delay={0.1}>
-                <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-[2.25rem] border border-amber-400/35 bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.15),rgba(17,22,29,0.98)_42%,#11161D_100%)] p-8 shadow-2xl shadow-black/30 transition duration-500 hover:-translate-y-1 hover:border-amber-400/55 md:p-10 xl:min-h-[430px]">
-                  <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl" />
+                {featuredPreview ? (
+                  <div className="mt-5 min-h-0 flex-1 overflow-hidden">
+                    <blockquote className="h-full min-h-0 break-words overflow-hidden text-sm font-semibold leading-[1.55] tracking-[-0.015em] text-white [overflow-wrap:anywhere] md:text-base xl:text-[1.05rem]">
+                      „{featuredPreview.value}”
+                      {featuredPreview.truncated ? (
+                        <>
+                          {" "}
 
-                  <div className="relative flex h-full min-w-0 flex-col">
-                    <div className="flex items-start justify-between gap-6">
-                      <BrandMark
-                        review={featuredReview}
-                        large
-                      />
-
-                      <div className="flex flex-col items-end gap-3">
-                        {featuredReview.isPinned ? (
-                          <span className="rounded-full border border-amber-400/35 bg-amber-400/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
-                            Pinned
-                          </span>
-                        ) : (
-                          <span
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/35 bg-amber-400/10 text-amber-300"
-                            title="Cel mai recent"
-                            aria-label="Cel mai recent"
-                          >
-                            <Clock3 className="h-4 w-4" />
-                          </span>
-                        )}
-
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
-                          <Quote className="h-6 w-6" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {featuredPreview ? (
-                      <div className="mt-8 min-w-0">
-                        <blockquote className="break-words text-xl font-semibold leading-[1.4] tracking-[-0.035em] text-white [overflow-wrap:anywhere] md:text-2xl 2xl:text-3xl">
-                          „{featuredPreview.value}”
-                        </blockquote>
-
-                        {featuredPreview.truncated ? (
                           <a
                             href={getReviewHref(
                               featuredReview._id,
                             )}
-                            className="group/more mt-5 inline-flex w-fit items-center gap-2 text-sm font-black text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:text-amber-200"
+                            className="group/more inline-flex items-center gap-1.5 align-baseline text-sm font-black text-amber-300 transition duration-300 hover:text-amber-200"
                           >
                             Citește mai mult
 
-                            <span className="text-lg leading-none transition duration-300 group-hover/more:translate-x-1">
+                            <span className="text-xl leading-none transition duration-300 group-hover/more:translate-x-1">
                               →
                             </span>
                           </a>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    <div className="mt-auto flex min-w-0 flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-end sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="break-words text-xl font-black [overflow-wrap:anywhere]">
-                          {featuredReview.company}
-                        </p>
-
-                        <p className="mt-1 break-words text-sm text-gray-400 [overflow-wrap:anywhere]">
-                          {featuredReview.project}
-                        </p>
-                      </div>
-
-                      <Stars
-                        rating={
-                          featuredReview.rating
-                        }
-                        large
-                      />
-                    </div>
+                        </>
+                      ) : null}
+                    </blockquote>
                   </div>
-                </article>
-              </ScrollReveal>
-            ) : null}
-          </div>
-        </Container>
-      </section>
+                ) : (
+                  <div />
+                )}
+
+                <div className="mt-2 flex shrink-0 items-center justify-between gap-5 border-t border-white/10 pt-3">
+                  <p className="min-w-0 break-words text-xs leading-5 text-gray-400 [overflow-wrap:anywhere]">
+                    {featuredReview.project}
+                  </p>
+
+                  <Stars
+                    rating={
+                      featuredReview.rating
+                    }
+                    large
+                  />
+                </div>
+              </div>
+            </article>
+          ) : null
+        }
+      />
 
       {reviews.length === 0 ? (
         <section className="bg-[#080B10] py-20 md:py-24">
@@ -589,8 +640,8 @@ export default async function TestimonialsPage({
                 </p>
 
                 <p className="mt-3 text-sm leading-7 text-gray-400">
-                  Testimonialele adăugate în Sanity Studio
-                  vor apărea automat aici.
+                  Primele experiențe ale clienților vor fi
+                  prezentate aici în curând.
                 </p>
               </div>
             </ScrollReveal>
@@ -679,9 +730,24 @@ export default async function TestimonialsPage({
 
                       <div className="mt-8 flex flex-col gap-5 border-t border-white/10 pt-5 sm:flex-row sm:items-end sm:justify-between">
                         <div className="min-w-0">
-                          <h3 className="break-words text-xl font-black tracking-[-0.035em] text-white transition duration-500 [overflow-wrap:anywhere] group-hover:text-amber-300">
-                            {review.company}
-                          </h3>
+                          {review.websiteUrl ? (
+                            <a
+                              href={review.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group/company inline-flex max-w-full items-center gap-2"
+                            >
+                              <span className="break-words text-lg font-black tracking-[-0.03em] !text-white [overflow-wrap:anywhere]">
+                                {review.company}
+                              </span>
+
+                              <ArrowUpRight className="h-4 w-4 shrink-0 text-amber-300 transition duration-300 group-hover/company:translate-x-0.5 group-hover/company:-translate-y-0.5" />
+                            </a>
+                          ) : (
+                            <h3 className="break-words text-lg font-black tracking-[-0.03em] !text-white [overflow-wrap:anywhere]">
+                              {review.company}
+                            </h3>
+                          )}
 
                           <p className="mt-1 break-words text-sm text-gray-500 [overflow-wrap:anywhere]">
                             {review.project}

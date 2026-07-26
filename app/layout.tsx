@@ -1,5 +1,7 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -36,6 +38,9 @@ export default function RootLayout({
   return (
     <html lang="ro" className={inter.variable}>
       <body>
+        <Script id="disable-scroll-restoration" strategy="beforeInteractive">
+          {`if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }`}
+        </Script>
         <GoogleConsent />
         <SiteShell>{children}</SiteShell>
       </body>
