@@ -1,79 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { motion } from "motion/react";
+
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
-const demos = [
-  {
-    title: "Fitness Studio",
-    category: "Website de prezentare",
-    description:
-      "Demo pentru sală de fitness sau studio premium: servicii, abonamente, program și cereri rapide.",
-    tags: ["Fitness", "Servicii", "Lead-uri"],
-    href: "https://demo-fitness.webuilder.ro",
-  },
-  {
-    title: "Dental Clinic",
-    category: "Website cu programări",
-    description:
-      "Demo pentru clinică stomatologică: servicii medicale, încredere, programări și local SEO.",
-    tags: ["Medical", "Programări", "Local SEO"],
-    href: "https://demo-dental.webuilder.ro",
-  },
-  {
-    title: "Logistics Company",
-    category: "Website B2B",
-    description:
-      "Demo pentru firmă de transport/logistică: servicii B2B, rute, ofertare și credibilitate.",
-    tags: ["Transport", "B2B", "Ofertare"],
-    href: "https://demo-logistics.webuilder.ro",
-  },
-  {
-    title: "Restaurant Premium",
-    category: "Website local business",
-    description:
-      "Demo pentru restaurant: meniu, rezervări, galerie, Google Maps și pagini optimizate local.",
-    tags: ["Restaurant", "Rezervări", "Local"],
-    href: "https://demo-restaurant.webuilder.ro",
-  },
-  {
-    title: "Real Estate Agency",
-    category: "Website imobiliare",
-    description:
-      "Demo pentru agenție imobiliară: listări, proprietăți, cereri de vizionare și pagini de zone.",
-    tags: ["Imobiliare", "Listări", "SEO"],
-    href: "https://demo-realestate.webuilder.ro",
-  },
-  {
-    title: "Beauty Salon",
-    category: "Website cu programări",
-    description:
-      "Demo pentru salon de beauty: servicii, prețuri, programări, testimoniale și galerie.",
-    tags: ["Beauty", "Programări", "Servicii"],
-    href: "https://demo-beauty.webuilder.ro",
-  },
-  {
-    title: "Auto Service",
-    category: "Website servicii auto",
-    description:
-      "Demo pentru service auto: servicii, cereri ofertă, programări și pagini pentru reparații.",
-    tags: ["Auto", "Service", "Contact rapid"],
-    href: "https://demo-auto.webuilder.ro",
-  },
-];
+export type PortfolioDemo = {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  tags: string[];
+  href: string;
+  slug?: string;
+  previewImageUrl?: string;
+  projectKind?: "demo" | "client";
+};
 
-function getOffset(index: number, activeIndex: number) {
-  const total = demos.length;
+function getOffset(
+  index: number,
+  activeIndex: number,
+  total: number,
+) {
+  if (total <= 1) {
+    return 0;
+  }
+
   let offset = index - activeIndex;
+  const half = total / 2;
 
-  if (offset > total / 2) {
+  if (offset > half) {
     offset -= total;
   }
 
-  if (offset < -total / 2) {
+  if (offset < -half) {
     offset += total;
   }
 
@@ -96,11 +57,11 @@ function getCardAnimation(offset: number) {
   if (offset === -1) {
     return {
       x: -455,
-      y: 22,
-      scale: 0.92,
-      opacity: 0.55,
+      y: 28,
+      scale: 0.91,
+      opacity: 0.42,
       zIndex: 20,
-      filter: "brightness(0.72)",
+      filter: "brightness(0.58)",
       pointerEvents: "auto" as const,
     };
   }
@@ -108,63 +69,148 @@ function getCardAnimation(offset: number) {
   if (offset === 1) {
     return {
       x: 455,
-      y: 22,
-      scale: 0.92,
-      opacity: 0.55,
+      y: 28,
+      scale: 0.91,
+      opacity: 0.42,
       zIndex: 20,
-      filter: "brightness(0.72)",
+      filter: "brightness(0.58)",
       pointerEvents: "auto" as const,
     };
   }
 
   return {
-    x: offset < 0 ? -720 : 720,
-    y: 42,
+    x: offset < 0 ? -900 : 900,
+    y: 40,
     scale: 0.86,
     opacity: 0,
     zIndex: 0,
-    filter: "brightness(0.55)",
+    filter: "brightness(0.4)",
     pointerEvents: "none" as const,
   };
 }
 
-export function PortfolioCarousel() {
-  const [activeIndex, setActiveIndex] = useState(0);
+export function PortfolioCarousel({
+  demos,
+}: {
+  demos: PortfolioDemo[];
+}) {
+  const [activeIndex, setActiveIndex] =
+    useState(0);
+
+  if (demos.length === 0) {
+    return null;
+  }
+
+  const safeActiveIndex =
+    activeIndex >= demos.length
+      ? 0
+      : activeIndex;
+
+  /*
+   * Randăm numai:
+   * - proiectul anterior
+   * - proiectul activ
+   * - proiectul următor
+   *
+   * Cardurile ghost -2 și +2 nu mai sunt randate.
+   */
+  const renderedDemos = demos
+    .map((demo, index) => ({
+      demo,
+      index,
+      offset: getOffset(
+        index,
+        safeActiveIndex,
+        demos.length,
+      ),
+    }))
+    .filter(
+      ({ offset }) =>
+        Math.abs(offset) <= 1,
+    );
 
   function selectDemo(index: number) {
     setActiveIndex(index);
   }
 
   function goPrevious() {
-    setActiveIndex((current) =>
-      current === 0 ? demos.length - 1 : current - 1
-    );
+    setActiveIndex((current) => {
+      const safeCurrent =
+        current >= demos.length
+          ? 0
+          : current;
+
+      return safeCurrent === 0
+        ? demos.length - 1
+        : safeCurrent - 1;
+    });
   }
 
   function goNext() {
-    setActiveIndex((current) =>
-      current === demos.length - 1 ? 0 : current + 1
-    );
+    setActiveIndex((current) => {
+      const safeCurrent =
+        current >= demos.length
+          ? 0
+          : current;
+
+      return safeCurrent ===
+        demos.length - 1
+        ? 0
+        : safeCurrent + 1;
+    });
   }
 
   return (
-    <div className="relative mt-14">
-      <div className="mb-10 flex items-center justify-between gap-4">
+    <div className="relative mt-14 overflow-x-clip">
+      <div className="mb-10 flex flex-wrap items-center justify-between gap-5">
         <ScrollReveal>
-          <div className="flex items-center gap-2">
-            {demos.map((demo, index) => (
-              <button
-                key={demo.title}
-                type="button"
-                onClick={() => selectDemo(index)}
-                aria-label={`Vezi demo ${demo.title}`}
-                className={`h-2.5 cursor-pointer rounded-full transition-all duration-500 hover:-translate-y-0.5 ${
-                  index === activeIndex
-                    ? "w-8 bg-amber-400"
-                    : "w-2.5 bg-white/20 hover:bg-white/40"
-                }`}
-              />
-            ))}
+          <div className="flex items-center gap-5">
+            <p className="min-w-[72px] text-sm font-black tabular-nums text-white">
+              {String(
+                safeActiveIndex + 1,
+              ).padStart(2, "0")}
+
+              <span className="mx-2 text-white/25">
+                /
+              </span>
+
+              <span className="text-gray-500">
+                {String(
+                  demos.length,
+                ).padStart(2, "0")}
+              </span>
+            </p>
+
+            <div className="flex items-center gap-2">
+              {demos.map(
+                (demo, index) => {
+                  const isActive =
+                    index ===
+                    safeActiveIndex;
+
+                  return (
+                    <button
+                      key={demo._id}
+                      type="button"
+                      onClick={() =>
+                        selectDemo(index)
+                      }
+                      aria-label={`Vezi proiectul ${demo.title}`}
+                      aria-current={
+                        isActive
+                          ? "true"
+                          : undefined
+                      }
+                      className={`h-2.5 cursor-pointer rounded-full transition-all duration-500 hover:-translate-y-0.5 ${
+                        isActive
+                          ? "w-8 bg-amber-400"
+                          : "w-2.5 bg-white/20 hover:bg-white/40"
+                      }`}
+                    />
+                  );
+                },
+              )}
+            </div>
           </div>
         </ScrollReveal>
 
@@ -173,10 +219,15 @@ export function PortfolioCarousel() {
             <button
               type="button"
               onClick={goPrevious}
-              aria-label="Demo anterior"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white transition duration-500 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.06] hover:text-amber-300"
+              aria-label="Proiect anterior"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white transition duration-300 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.06] hover:text-amber-300"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                aria-hidden="true"
+              >
                 <path
                   d="M15 6L9 12L15 18"
                   stroke="currentColor"
@@ -190,10 +241,15 @@ export function PortfolioCarousel() {
             <button
               type="button"
               onClick={goNext}
-              aria-label="Demo următor"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white transition duration-500 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.06] hover:text-amber-300"
+              aria-label="Proiect următor"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white transition duration-300 hover:-translate-y-1 hover:border-amber-400/30 hover:bg-white/[0.06] hover:text-amber-300"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                aria-hidden="true"
+              >
                 <path
                   d="M9 6L15 12L9 18"
                   stroke="currentColor"
@@ -208,109 +264,169 @@ export function PortfolioCarousel() {
       </div>
 
       <ScrollReveal delay={0.12}>
-        <div className="relative mx-auto h-[620px] max-w-7xl overflow-visible">
-          {demos.map((demo, index) => {
-            const offset = getOffset(index, activeIndex);
-            const isActive = offset === 0;
+        <div className="relative mx-auto h-[620px] w-full max-w-[1440px] overflow-x-clip">
+          {renderedDemos.map(
+            ({
+              demo,
+              index,
+              offset,
+            }) => {
+              const isActive =
+                offset === 0;
 
-            return (
-              <motion.article
-                key={demo.title}
-                animate={getCardAnimation(offset)}
-                whileHover={
-                  offset === 0
-                    ? {
-                        y: -8,
-                        scale: 1.015,
-                        filter: "brightness(1.06)",
-                      }
-                    : offset === -1 || offset === 1
+              return (
+                <motion.article
+                  key={demo._id}
+                  initial={false}
+                  animate={getCardAnimation(
+                    offset,
+                  )}
+                  transition={{
+                    duration: 0.58,
+                    ease: [
+                      0.16,
+                      1,
+                      0.3,
+                      1,
+                    ],
+                  }}
+                  whileHover={
+                    isActive
                       ? {
-                          y: 10,
-                          scale: 0.94,
-                          opacity: 0.72,
-                          filter: "brightness(0.95)",
+                          y: -7,
+                          scale: 1.012,
+                          filter:
+                            "brightness(1.05)",
                         }
-                      : undefined
-                }
-                transition={{
-                  duration: 0.55,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                onClick={() => selectDemo(index)}
-                className={`group absolute left-1/2 top-0 -ml-[210px] h-[580px] w-[420px] cursor-pointer overflow-hidden rounded-[2rem] border bg-[#11161D] p-5 shadow-2xl shadow-black/30 transition-colors duration-500 hover:bg-[#151B23] ${
-                  isActive
-                    ? "border-amber-400/35"
-                    : "border-white/10 hover:border-amber-400/25"
-                }`}
-              >
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+                      : {
+                          y: 18,
+                          scale: 0.925,
+                          opacity: 0.58,
+                          filter:
+                            "brightness(0.72)",
+                        }
+                  }
+                  onClick={() =>
+                    selectDemo(index)
+                  }
+                  className={`group absolute left-1/2 top-0 -ml-[210px] flex h-[580px] w-[420px] cursor-pointer flex-col overflow-hidden rounded-[2rem] border bg-[#11161D] p-5 shadow-2xl shadow-black/30 transition-colors duration-500 ${
+                    isActive
+                      ? "border-amber-400/35 hover:bg-[#151B23]"
+                      : "border-white/10"
+                  }`}
+                >
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
 
-                <div className="mb-6 flex h-52 items-center justify-center rounded-3xl border border-white/10 bg-[#080B10]">
-                  <div className="w-full max-w-[250px] rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition duration-500 group-hover:border-amber-400/20">
-                    <div className="mb-4 flex gap-2">
-                      <span className="h-3 w-3 rounded-full bg-red-400/80" />
-                      <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
-                      <span className="h-3 w-3 rounded-full bg-green-400/80" />
+                  <div className="h-52 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-[#080B10]">
+                    {demo.previewImageUrl ? (
+                      <div
+                        className="h-full w-full bg-cover bg-top transition duration-700 group-hover:scale-[1.025]"
+                        style={{
+                          backgroundImage: `url(${demo.previewImageUrl})`,
+                        }}
+                        role="img"
+                        aria-label={`Previzualizare ${demo.title}`}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <div className="w-full max-w-[250px] rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                          <div className="mb-4 flex gap-2">
+                            <span className="h-3 w-3 rounded-full bg-red-400/80" />
+                            <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
+                            <span className="h-3 w-3 rounded-full bg-green-400/80" />
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="h-3 w-24 rounded-full bg-amber-400/40" />
+
+                            <div className="h-4 w-full rounded-full bg-white/15" />
+
+                            <div className="h-4 w-3/4 rounded-full bg-white/10" />
+
+                            <div className="grid grid-cols-3 gap-2 pt-3">
+                              <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
+
+                              <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
+
+                              <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-6 flex min-h-0 flex-1 flex-col">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="truncate text-sm font-semibold text-amber-300">
+                        {demo.category}
+                      </p>
+
+                      <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-gray-400">
+                        {demo.projectKind ===
+                        "client"
+                          ? "Client"
+                          : "Demo"}
+                      </span>
                     </div>
 
-                    <div className="space-y-3">
-                      <div className="h-3 w-24 rounded-full bg-amber-400/40" />
-                      <div className="h-4 w-full rounded-full bg-white/15" />
-                      <div className="h-4 w-3/4 rounded-full bg-white/10" />
+                    <h3 className="mt-5 line-clamp-2 text-2xl font-black leading-[1.05] tracking-[-0.035em] text-white">
+                      {demo.title}
+                    </h3>
 
-                      <div className="grid grid-cols-3 gap-2 pt-3">
-                        <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
-                        <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
-                        <div className="h-12 rounded-xl border border-white/10 bg-white/[0.03]" />
-                      </div>
+                    <p className="mt-4 line-clamp-3 min-h-[84px] text-sm leading-7 text-gray-400">
+                      {demo.description}
+                    </p>
+
+                    <div className="mt-5 flex h-[30px] flex-wrap gap-2 overflow-hidden">
+                      {demo.tags
+                        .slice(0, 4)
+                        .map((tag) => (
+                          <span
+                            key={tag}
+                            className="h-fit rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-gray-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                    </div>
+
+                    <div
+                      className={`mt-auto flex gap-3 pt-6 transition duration-300 ${
+                        isActive
+                          ? "translate-y-0 opacity-100"
+                          : "pointer-events-none translate-y-3 opacity-0"
+                      }`}
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                    >
+                      {demo.slug ? (
+                        <Link
+                          href={`/portofoliu/${demo.slug}`}
+                          className="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-amber-400 px-5 text-sm font-semibold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                        >
+                          Vezi proiectul
+                        </Link>
+                      ) : null}
+
+                      <Link
+                        href={demo.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.03] px-5 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/35 hover:bg-white/[0.07] hover:text-amber-300"
+                      >
+                        {demo.projectKind ===
+                        "client"
+                          ? "Website live"
+                          : "Demo live"}
+                      </Link>
                     </div>
                   </div>
-                </div>
-
-                <p className="text-sm font-medium text-amber-300">
-                  {demo.category}
-                </p>
-
-                <h3 className="mt-5 text-2xl font-bold leading-[1.05] tracking-[-0.035em] text-white">
-                  {demo.title}
-                </h3>
-
-                <p className="mt-4 min-h-[84px] text-sm leading-7 text-gray-400">
-                  {demo.description}
-                </p>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {demo.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-gray-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-white/[0.05]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div
-                  className="mt-8 flex flex-col gap-3 sm:flex-row"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <Link
-                    href={demo.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-amber-400 px-6 text-sm font-semibold text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
-                  >
-                    Vezi demo live
-                  </Link>
-
-                  <Button href="/contact" variant="secondary">
-                    Vreau similar
-                  </Button>
-                </div>
-              </motion.article>
-            );
-          })}
+                </motion.article>
+              );
+            },
+          )}
         </div>
       </ScrollReveal>
     </div>

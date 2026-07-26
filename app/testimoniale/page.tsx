@@ -54,7 +54,7 @@ type TestimonialsPageProps = {
 };
 
 const REVIEWS_PER_PAGE = 6;
-const FEATURED_REVIEW_PREVIEW_LENGTH = 970;
+const FEATURED_REVIEW_PREVIEW_LENGTH = 920;
 const REVIEW_CARD_PREVIEW_LENGTH = 220;
 
 const reviewsQuery = `
@@ -598,7 +598,7 @@ export default async function TestimonialsPage({
                             )}
                             className="group/more inline-flex items-center gap-1.5 align-baseline text-sm font-black text-amber-300 transition duration-300 hover:text-amber-200"
                           >
-                            Citește mai mult
+                            Citește în continuare 
 
                             <span className="text-xl leading-none transition duration-300 group-hover/more:translate-x-1">
                               →
@@ -900,14 +900,25 @@ export default async function TestimonialsPage({
                   </p>
                 </div>
 
+                <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
                 <Link
-                  href="/contact"
-                  className="group/button inline-flex h-12 w-fit items-center justify-center gap-2 rounded-full bg-amber-400 px-7 text-sm font-black text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                    href="/portofoliu"
+                    className="group/portfolio inline-flex h-12 w-fit items-center justify-center gap-2 rounded-full border border-white/15 px-7 text-sm font-black text-white transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/40 hover:bg-white/[0.06] hover:text-amber-300"
                 >
-                  Cere ofertă
+                    Vezi portofoliul
 
-                  <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5" />
+                    <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover/portfolio:translate-x-0.5 group-hover/portfolio:-translate-y-0.5" />
                 </Link>
+
+                <Link
+                    href="/contact"
+                    className="group/button inline-flex h-12 w-fit items-center justify-center gap-2 rounded-full bg-amber-400 px-7 text-sm font-black text-black transition duration-300 hover:-translate-y-0.5 hover:bg-amber-300"
+                >
+                    Cere ofertă
+
+                    <ArrowUpRight className="h-4 w-4 transition duration-300 group-hover/button:translate-x-0.5 group-hover/button:-translate-y-0.5" />
+                </Link>
+                </div>
               </div>
             </div>
           </ScrollReveal>
