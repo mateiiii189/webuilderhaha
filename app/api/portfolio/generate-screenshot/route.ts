@@ -205,7 +205,7 @@ export async function POST(
 
   if (
     !process.env
-      .SANITY_API_WRITE_TOKEN
+      .SANITY_WRITE_TOKEN
   ) {
     return NextResponse.json(
       {

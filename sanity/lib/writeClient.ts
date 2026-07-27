@@ -11,7 +11,7 @@ const dataset =
     .NEXT_PUBLIC_SANITY_DATASET;
 
 const token =
-  process.env.SANITY_API_WRITE_TOKEN;
+  process.env.SANITY_WRITE_TOKEN;
 
 if (!projectId) {
   throw new Error(
