@@ -21,6 +21,19 @@ export const metadata: Metadata = {
     "Demo-uri și proiecte web construite pentru firme moderne din industrii precum fitness, medical, logistică, HoReCa, imobiliare, beauty și auto.",
 };
 
+/*
+ * Pagina este randată la fiecare request.
+ * Modificările publicate în Sanity apar după refresh,
+ * fără să fie necesar un nou deployment.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const freshClient = client.withConfig({
+  useCdn: false,
+  perspective: "published",
+});
+
 type PortfolioReview = {
   _id: string;
   company: string;
@@ -226,9 +239,12 @@ function FeaturedPortfolioProject({
                     </span>
                   ))}
 
-                {project.tags.length > 3 ? (
+                {project.tags.length >
+                3 ? (
                   <span className="shrink-0 cursor-default rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-3 py-1.5 text-[11px] font-black text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:border-amber-400/45 hover:bg-amber-400/[0.13] hover:text-amber-200">
-                    +{project.tags.length - 3}
+                    +
+                    {project.tags.length -
+                      3}
                   </span>
                 ) : null}
               </div>
@@ -266,27 +282,23 @@ export default async function PortofoliuPage() {
     featuredReview,
     portfolioProjectsFromSanity,
   ] = await Promise.all([
-    client.fetch<PortfolioReview | null>(
+    freshClient.fetch<
+      PortfolioReview | null
+    >(
       portfolioReviewQuery,
       {},
       {
-        next: {
-          tags: ["reviews"],
-        },
+        cache: "no-store",
       },
     ),
 
-    client.fetch<
+    freshClient.fetch<
       PortfolioProjectFromSanity[]
     >(
       portfolioProjectsQuery,
       {},
       {
-        next: {
-          tags: [
-            "portfolio-projects",
-          ],
-        },
+        cache: "no-store",
       },
     ),
   ]);
