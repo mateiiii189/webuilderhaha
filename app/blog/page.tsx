@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock3 } from "lucide-react";
+import { Clock3, Pin } from "lucide-react";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { Container } from "@/components/layout/Container";
 import { FixedPageHero } from "@/components/layout/FixedPageHero";
 import { BlogHeroSearch } from "@/components/blog/BlogHeroSearch";
+import {
+  CategoryFilterMenu,
+  type CategoryFilterOption,
+} from "@/components/ui/CategoryFilterMenu";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { PaginationDotsPanel } from "@/components/sections/PaginationDotsPanel";
 
@@ -23,17 +27,20 @@ type Post = {
   body?: unknown;
   publishedAt?: string;
   _createdAt: string;
-  postType: string;
-  isPinned?: boolean;
-  coverImage?: unknown;
-  category?: {
+  categories?: string[];
+  authorName?: string;
+  legacyPostType?: string;
+  legacyCategory?: {
     title?: string;
   };
+  isPinned?: boolean;
+  coverImage?: unknown;
 };
 
 type BlogPageProps = {
   searchParams?: Promise<{
     page?: string;
+    category?: string;
   }>;
 };
 
@@ -50,7 +57,11 @@ const CARD_TITLE_LIMIT = 86;
 const CARD_EXCERPT_LIMIT = 185;
 
 const postsQuery = `
-  *[_type == "post" && defined(slug.current)] |
+  *[
+    _type == "post" &&
+    coalesce(isPublished, true) == true &&
+    defined(slug.current)
+  ] |
   order(
     coalesce(publishedAt, _createdAt) desc,
     _createdAt desc,
@@ -63,20 +74,52 @@ const postsQuery = `
     body,
     publishedAt,
     _createdAt,
-    postType,
+    categories,
+    authorName,
+    "legacyPostType": postType,
+    "legacyCategory": category->{title},
     isPinned,
-    coverImage,
-    category->{title}
+    coverImage
   }
 `;
 
-function getPostTypeLabel(type: string) {
-  if (type === "seo") return "Ghid";
-  if (type === "social") return "Social";
-  if (type === "caseStudy") return "Studiu de caz";
+function getLegacyPostTypeLabel(type?: string) {
+  if (type === "seo") return "SEO Article";
+  if (type === "social") return "Social Embed";
+  if (type === "caseStudy") return "Case Study";
   if (type === "update") return "Update";
 
-  return "Articol";
+  return "";
+}
+
+function getPostCategories(post: Post): string[] {
+  const customCategories = Array.isArray(
+    post.categories,
+  )
+    ? post.categories
+        .map((category) =>
+          category.trim(),
+        )
+        .filter(Boolean)
+    : [];
+
+  if (customCategories.length > 0) {
+    return Array.from(
+      new Set(customCategories),
+    );
+  }
+
+  return Array.from(
+    new Set(
+      [
+        getLegacyPostTypeLabel(
+          post.legacyPostType,
+        ),
+        post.legacyCategory?.title?.trim() ||
+          "",
+      ].filter(Boolean),
+    ),
+  );
 }
 
 function portableTextToPlainText(
@@ -272,10 +315,25 @@ function getPaginationItems(
   return items;
 }
 
-function getBlogPageHref(page: number) {
-  return page === 1
-    ? "/blog"
-    : `/blog?page=${page}`;
+function getBlogPageHref(
+  page: number,
+  category: string,
+) {
+  const params = new URLSearchParams();
+
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+
+  return `/blog${
+    query ? `?${query}` : ""
+  }`;
 }
 
 export default async function BlogPage({
@@ -283,6 +341,10 @@ export default async function BlogPage({
 }: BlogPageProps) {
   const resolvedSearchParams =
     await searchParams;
+
+  const activeCategory =
+    resolvedSearchParams?.category?.trim() ||
+    "";
 
   const requestedPage = Number(
     resolvedSearchParams?.page || 1,
@@ -304,24 +366,68 @@ export default async function BlogPage({
     },
   );
 
-  const pinnedPost = posts.find(
+  const categoryOptions: CategoryFilterOption[] =
+    Array.from(
+      new Set(
+        posts.flatMap((post) =>
+          getPostCategories(post),
+        ),
+      ),
+    )
+      .sort((a, b) =>
+        a.localeCompare(b, "ro"),
+      )
+      .map((category) => ({
+        value: category,
+        label: category,
+        count: posts.filter((post) =>
+          getPostCategories(
+            post,
+          ).includes(category),
+        ).length,
+      }));
+
+  const filteredPosts = activeCategory
+    ? posts.filter((post) =>
+        getPostCategories(
+          post,
+        ).includes(activeCategory),
+      )
+    : posts;
+
+  const latestPost = filteredPosts[0];
+
+  const pinnedPost = filteredPosts.find(
     (post) => post.isPinned,
   );
 
-  const sortedPosts = pinnedPost
-    ? [
-        pinnedPost,
-        ...posts.filter(
-          (post) =>
-            post._id !== pinnedPost._id,
-        ),
-      ]
-    : posts;
+  /*
+   * Articolul pinned ocupă cardul mare.
+   * Dacă nu există pinned, cardul mare este cel mai recent.
+   */
+  const heroPost =
+    pinnedPost || latestPost;
 
-  const heroPost = sortedPosts[0];
+  /*
+   * Cardul mare este exclus din grila de jos.
+   * Dacă pinned-ul nu este și cel mai recent,
+   * articolul recent rămâne în listă cu iconița de recent.
+   */
+  const postsForList = heroPost
+    ? filteredPosts.filter(
+        (post) =>
+          post._id !== heroPost._id,
+      )
+    : filteredPosts;
+
+  const paginationSequence = heroPost
+    ? [heroPost, ...postsForList]
+    : postsForList;
 
   const totalPages = Math.max(
-    getTotalPages(sortedPosts.length),
+    getTotalPages(
+      paginationSequence.length,
+    ),
     1,
   );
 
@@ -332,25 +438,25 @@ export default async function BlogPage({
 
   const paginatedPosts =
     getPostsForPage(
-      sortedPosts,
+      paginationSequence,
       safeCurrentPage,
     );
 
-  /*
-   * Articolul pinned sau cel mai recent este afișat în hero.
-   * Pagina 1 păstrează dedesubt următoarele 6 articole,
-   * iar paginile următoare afișează câte 6.
-   */
   const otherPosts =
     safeCurrentPage === 1
       ? paginatedPosts.slice(1)
       : paginatedPosts;
 
   const paginationItems =
-    getPaginationItems(
-      safeCurrentPage,
-      totalPages,
-    );
+    activeCategory
+      ? Array.from(
+          { length: totalPages },
+          (_, index) => index + 1,
+        )
+      : getPaginationItems(
+          safeCurrentPage,
+          totalPages,
+        );
 
   const featuredTitle = heroPost
     ? truncateText(
@@ -366,7 +472,7 @@ export default async function BlogPage({
       )
     : null;
 
-  const searchPosts = sortedPosts.map(
+  const searchPosts = filteredPosts.map(
     (post) => ({
       id: post._id,
       title: post.title,
@@ -375,10 +481,13 @@ export default async function BlogPage({
       body: portableTextToPlainText(
         post.body,
       ),
-      category: post.category?.title,
-      type: getPostTypeLabel(
-        post.postType,
-      ),
+      category:
+        getPostCategories(post).join(
+          ", ",
+        ),
+      type:
+        getPostCategories(post)[0] ||
+        "Articol",
     }),
   );
 
@@ -412,11 +521,13 @@ export default async function BlogPage({
               )}`}
               className="group relative isolate flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[2rem] border border-amber-400/35 bg-[#11161D] shadow-2xl shadow-black/30 transition duration-500 [transform:translateZ(0)] hover:-translate-y-1 hover:border-amber-400/55"
             >
-              {heroPost.isPinned ? (
-                <PinnedArticleBadge />
-              ) : (
-                <RecentArticleBadge />
-              )}
+              <ArticleStatusBadge
+                type={
+                  heroPost.isPinned
+                    ? "pinned"
+                    : "recent"
+                }
+              />
 
               <div className="relative -mb-1 h-[269px] shrink-0 overflow-hidden bg-[#11161D] [transform:translateZ(0)]">
                 {heroPost.coverImage ? (
@@ -444,17 +555,27 @@ export default async function BlogPage({
               <div className="relative z-10 flex min-h-0 flex-1 flex-col bg-[#11161D] p-6">
                 <div className="min-h-0 overflow-hidden">
                   <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black">
-                      {getPostTypeLabel(
-                        heroPost.postType,
+                    {getPostCategories(
+                      heroPost,
+                    )
+                      .slice(0, 3)
+                      .map(
+                        (
+                          category,
+                          categoryIndex,
+                        ) => (
+                          <span
+                            key={category}
+                            className={
+                              categoryIndex === 0
+                                ? "rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black"
+                                : "rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-300"
+                            }
+                          >
+                            {category}
+                          </span>
+                        ),
                       )}
-                    </span>
-
-                    {heroPost.category?.title ? (
-                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-300">
-                        {heroPost.category.title}
-                      </span>
-                    ) : null}
                   </div>
 
                   <h2 className="mt-4 break-words text-[1.7rem] font-black leading-[1.02] tracking-[-0.04em] text-white [overflow-wrap:anywhere]">
@@ -491,6 +612,43 @@ export default async function BlogPage({
 
       <section className="bg-[#080B10] py-24">
         <Container>
+          <ScrollReveal>
+            <div className="relative z-50 mb-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white">
+                  {filteredPosts.length}{" "}
+                  {filteredPosts.length === 1
+                    ? "articol"
+                    : "articole"}
+                </p>
+
+                <p className="mt-1 truncate text-sm text-gray-500">
+                  {activeCategory
+                    ? `Categorie activă: ${activeCategory}`
+                    : "Sunt afișate toate articolele publicate."}
+                </p>
+              </div>
+
+              <CategoryFilterMenu
+                label="Filtrează articolele"
+                activeValues={
+                  activeCategory
+                    ? [activeCategory]
+                    : []
+                }
+                options={categoryOptions}
+                clearLabel="Toate categoriile"
+                closeOnSelect
+                navigation={{
+                  pathname: "/blog",
+                  queryKey: "category",
+                  mode: "single",
+                  scroll: false,
+                }}
+              />
+            </div>
+          </ScrollReveal>
+
           {paginatedPosts.length > 0 ? (
             <div className="space-y-10">
               {otherPosts.length > 0 ? (
@@ -521,7 +679,14 @@ export default async function BlogPage({
                             className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.055]"
                           >
                             {post.isPinned ? (
-                              <PinnedArticleBadge
+                              <ArticleStatusBadge
+                                type="pinned"
+                                small
+                              />
+                            ) : post._id ===
+                              latestPost?._id ? (
+                              <ArticleStatusBadge
+                                type="recent"
                                 small
                               />
                             ) : null}
@@ -549,22 +714,32 @@ export default async function BlogPage({
 
                             <div className="flex min-w-0 flex-1 flex-col p-6">
                               <div className="flex flex-wrap gap-2">
-                                <span className="rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-black">
-                                  {getPostTypeLabel(
-                                    post.postType,
+                                {getPostCategories(
+                                  post,
+                                )
+                                  .slice(0, 3)
+                                  .map(
+                                    (
+                                      category,
+                                      categoryIndex,
+                                    ) => (
+                                      <span
+                                        key={
+                                          category
+                                        }
+                                        className={
+                                          categoryIndex ===
+                                          0
+                                            ? "rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-black"
+                                            : "rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400"
+                                        }
+                                      >
+                                        {
+                                          category
+                                        }
+                                      </span>
+                                    ),
                                   )}
-                                </span>
-
-                                {post.category
-                                  ?.title ? (
-                                  <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">
-                                    {
-                                      post
-                                        .category
-                                        .title
-                                    }
-                                  </span>
-                                ) : null}
                               </div>
 
                               <h2 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight text-white [overflow-wrap:anywhere]">
@@ -604,6 +779,7 @@ export default async function BlogPage({
                         href={getBlogPageHref(
                           safeCurrentPage -
                             1,
+                          activeCategory,
                         )}
                         scroll
                         className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300"
@@ -624,12 +800,14 @@ export default async function BlogPage({
                             totalPages={
                               totalPages
                             }
+                            basePath="/blog"
                           />
                         ) : (
                           <Link
                             key={item}
                             href={getBlogPageHref(
                               item,
+                              activeCategory,
                             )}
                             scroll
                             className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black transition duration-500 hover:-translate-y-0.5 ${
@@ -650,6 +828,7 @@ export default async function BlogPage({
                         href={getBlogPageHref(
                           safeCurrentPage +
                             1,
+                          activeCategory,
                         )}
                         scroll
                         className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300"
@@ -666,7 +845,9 @@ export default async function BlogPage({
             <ScrollReveal>
               <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-10 text-center">
                 <h2 className="text-3xl font-black text-white">
-                  Nu există articole publicate încă.
+                  {activeCategory
+                    ? "Nu există articole în această categorie."
+                    : "Nu există articole publicate încă."}
                 </h2>
               </div>
             </ScrollReveal>
@@ -677,35 +858,44 @@ export default async function BlogPage({
   );
 }
 
-function PinnedArticleBadge({
+function ArticleStatusBadge({
+  type,
   small = false,
 }: {
+  type: "pinned" | "recent";
   small?: boolean;
 }) {
-  return (
-    <div
-      className={`absolute z-30 rounded-full border border-amber-400/40 bg-[#0B0F14]/95 font-black uppercase tracking-[0.18em] text-amber-300 shadow-lg shadow-black/30 ${
-        small
-          ? "right-4 top-4 px-3 py-1.5 text-[10px]"
-          : "right-5 top-5 px-4 py-2 text-xs"
-      }`}
-    >
-      Pinned
-    </div>
-  );
-}
+  const isPinned = type === "pinned";
 
-function RecentArticleBadge() {
   return (
     <div
-      className="absolute right-5 top-5 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/40 bg-[#0B0F14]/95 text-amber-300 shadow-lg shadow-black/30"
-      title="Cel mai recent"
-      aria-label="Cel mai recent"
+      className={`absolute z-30 flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300 ${
+        small
+          ? "right-4 top-4"
+          : "right-5 top-5"
+      }`}
+      title={
+        isPinned
+          ? "Articol fixat"
+          : "Cel mai recent"
+      }
+      aria-label={
+        isPinned
+          ? "Articol fixat"
+          : "Cel mai recent"
+      }
     >
-      <Clock3
-        className="h-5 w-5"
-        strokeWidth={2.4}
-      />
+      {isPinned ? (
+        <Pin
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      ) : (
+        <Clock3
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      )}
     </div>
   );
 }

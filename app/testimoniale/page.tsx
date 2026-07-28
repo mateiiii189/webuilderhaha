@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Clock3,
   Handshake,
+  Pin,
   Quote,
   Sparkles,
 } from "lucide-react";
@@ -54,11 +55,14 @@ type TestimonialsPageProps = {
 };
 
 const REVIEWS_PER_PAGE = 6;
-const FEATURED_REVIEW_PREVIEW_LENGTH = 920;
+const FEATURED_REVIEW_PREVIEW_LENGTH = 800;
 const REVIEW_CARD_PREVIEW_LENGTH = 220;
 
 const reviewsQuery = `
-  *[_type == "review"] |
+  *[
+    _type == "review" &&
+    coalesce(isPublished, true) == true
+  ] |
   order(
     coalesce(publishedAt, _createdAt) desc,
     _createdAt desc,
@@ -134,9 +138,12 @@ function getPaginationItems(
 function getTestimonialsPageHref(
   page: number,
 ) {
-  return page === 1
-    ? "/testimoniale"
-    : `/testimoniale?page=${page}`;
+  const query =
+    page === 1
+      ? ""
+      : `?page=${page}`;
+
+  return `/testimoniale${query}`;
 }
 
 
@@ -282,6 +289,44 @@ function Stars({
   );
 }
 
+function ReviewStatusBadge({
+  type,
+  className = "",
+}: {
+  type: "pinned" | "recent";
+  className?: string;
+}) {
+  const isPinned = type === "pinned";
+
+  return (
+    <span
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300 ${className}`}
+      title={
+        isPinned
+          ? "Testimonial fixat"
+          : "Cel mai recent"
+      }
+      aria-label={
+        isPinned
+          ? "Testimonial fixat"
+          : "Cel mai recent"
+      }
+    >
+      {isPinned ? (
+        <Pin
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      ) : (
+        <Clock3
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      )}
+    </span>
+  );
+}
+
 function BrandMark({
   review,
   large = false,
@@ -403,12 +448,14 @@ export default async function TestimonialsPage({
       }))
       .sort(compareReviewsByPublishedDateDesc);
 
+  const latestReview = reviews[0];
+
   const pinnedReview = reviews.find(
     (review) => review.isPinned,
   );
 
   const featuredReview =
-    pinnedReview || reviews[0];
+    pinnedReview || latestReview;
 
   /*
    * Cardul mare este întotdeauna exclus din lista de jos:
@@ -564,19 +611,13 @@ export default async function TestimonialsPage({
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
-                    {featuredReview.isPinned ? (
-                      <span className="flex h-10 items-center justify-center rounded-xl border border-amber-400/35 bg-amber-400/10 px-4 text-xs font-black uppercase tracking-[0.18em] text-amber-300">
-                        Pinned
-                      </span>
-                    ) : (
-                      <span
-                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/35 bg-amber-400/10 text-amber-300"
-                        title="Cel mai recent"
-                        aria-label="Cel mai recent"
-                      >
-                        <Clock3 className="h-5 w-5" />
-                      </span>
-                    )}
+                    <ReviewStatusBadge
+                      type={
+                        featuredReview.isPinned
+                          ? "pinned"
+                          : "recent"
+                      }
+                    />
 
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
                       <Quote className="h-5 w-5" />
@@ -585,34 +626,31 @@ export default async function TestimonialsPage({
                 </div>
 
                 {featuredPreview ? (
-                  <div className="mt-5 min-h-0 flex-1 overflow-hidden">
-                    <blockquote className="h-full min-h-0 break-words overflow-hidden text-sm font-semibold leading-[1.55] tracking-[-0.015em] text-white [overflow-wrap:anywhere] md:text-base xl:text-[1.05rem]">
+                  <div className="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <blockquote className="min-h-0 flex-1 break-words overflow-hidden text-sm font-semibold leading-[1.55] tracking-[-0.015em] text-white [overflow-wrap:anywhere] md:text-base xl:text-[1.05rem]">
                       „{featuredPreview.value}”
-                      {featuredPreview.truncated ? (
-                        <>
-                          {" "}
-
-                          <a
-                            href={getReviewHref(
-                              featuredReview._id,
-                            )}
-                            className="group/more inline-flex items-center gap-1.5 align-baseline text-sm font-black text-amber-300 transition duration-300 hover:text-amber-200"
-                          >
-                            Citește în continuare 
-
-                            <span className="text-xl leading-none transition duration-300 group-hover/more:translate-x-1">
-                              →
-                            </span>
-                          </a>
-                        </>
-                      ) : null}
                     </blockquote>
+
+                    {featuredPreview.truncated ? (
+                      <a
+                        href={getReviewHref(
+                          featuredReview._id,
+                        )}
+                        className="group/more mt-7 inline-flex w-fit shrink-0 items-center gap-2 text-base font-black text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:text-amber-200"
+                      >
+                        Citește în continuare
+
+                        <span className="text-xl leading-none transition duration-300 group-hover/more:translate-x-1">
+                          →
+                        </span>
+                      </a>
+                    ) : null}
                   </div>
                 ) : (
                   <div />
                 )}
 
-                <div className="mt-2 flex shrink-0 items-center justify-between gap-5 border-t border-white/10 pt-3">
+                <div className="mt-5 flex shrink-0 items-center justify-between gap-5 border-t border-white/10 pt-4">
                   <p className="min-w-0 break-words text-xs leading-5 text-gray-400 [overflow-wrap:anywhere]">
                     {featuredReview.project}
                   </p>
@@ -689,22 +727,21 @@ export default async function TestimonialsPage({
                       )}
                     >
                     <article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 transition duration-500 hover:-translate-y-1 hover:border-amber-400/35 hover:bg-white/[0.045]">
-                      {review.isPinned ? (
-                        <span className="absolute right-6 top-6 rounded-full border border-amber-400/35 bg-amber-400/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
-                          Pinned
-                        </span>
-                      ) : null}
-
                       <div className="flex items-start justify-between gap-5">
                         <BrandMark
                           review={review}
                         />
 
-                        {!review.isPinned ? (
+                        {review.isPinned ? (
+                          <ReviewStatusBadge type="pinned" />
+                        ) : review._id ===
+                          latestReview?._id ? (
+                          <ReviewStatusBadge type="recent" />
+                        ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-amber-300">
                             <Quote className="h-5 w-5" />
                           </div>
-                        ) : null}
+                        )}
                       </div>
 
                       <div className="mt-7 flex min-w-0 flex-1 flex-col">
@@ -773,6 +810,7 @@ export default async function TestimonialsPage({
                       href={getTestimonialsPageHref(
                         safeCurrentPage - 1,
                       )}
+                      scroll
                       className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300"
                       aria-label="Pagina anterioară"
                     >
@@ -792,13 +830,14 @@ export default async function TestimonialsPage({
                             totalPages
                           }
                           basePath="/testimoniale"
-                        />
+                                                  />
                       ) : (
                         <Link
                           key={item}
                           href={getTestimonialsPageHref(
                             item,
                           )}
+                          scroll
                           className={`flex h-11 w-11 items-center justify-center rounded-full border text-sm font-black transition duration-500 hover:-translate-y-0.5 ${
                             item ===
                             safeCurrentPage
@@ -817,6 +856,7 @@ export default async function TestimonialsPage({
                       href={getTestimonialsPageHref(
                         safeCurrentPage + 1,
                       )}
+                      scroll
                       className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-sm font-black text-white transition duration-500 hover:-translate-y-0.5 hover:border-amber-400/40 hover:text-amber-300"
                       aria-label="Pagina următoare"
                     >

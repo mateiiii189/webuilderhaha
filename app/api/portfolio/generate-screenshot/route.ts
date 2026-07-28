@@ -127,7 +127,7 @@ async function generateCardScreenshot(
 
         delay: 2,
         wait_until:
-          "networkidle2",
+          ["networkidle2"],
 
         reduced_motion: true,
         block_cookie_banners: true,

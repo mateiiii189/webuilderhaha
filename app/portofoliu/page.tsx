@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Clock3, Pin } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
 import { FixedPageHero } from "@/components/layout/FixedPageHero";
@@ -63,12 +63,16 @@ type PortfolioProject =
     isPinned: boolean;
     isFeatured: boolean;
     isPublished: boolean;
+    isRecent: boolean;
     publishedAt?: string;
     createdAt: string;
   };
 
 const portfolioReviewQuery = `
-  *[_type == "review"] |
+  *[
+    _type == "review" &&
+    coalesce(isPublished, true) == true
+  ] |
   order(
     isPinned desc,
     coalesce(publishedAt, _createdAt) desc,
@@ -112,7 +116,7 @@ const portfolioProjectsQuery = `
 
 function getReviewPreview(
   text: string,
-  maxLength = 420,
+  maxLength = 320,
 ) {
   const normalized = text.trim();
 
@@ -171,6 +175,44 @@ function ReviewStars({
   );
 }
 
+function ProjectStatusBadge({
+  type,
+  className = "",
+}: {
+  type: "pinned" | "recent";
+  className?: string;
+}) {
+  const isPinned = type === "pinned";
+
+  return (
+    <span
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 text-amber-300 ${className}`}
+      title={
+        isPinned
+          ? "Proiect fixat"
+          : "Cel mai recent"
+      }
+      aria-label={
+        isPinned
+          ? "Proiect fixat"
+          : "Cel mai recent"
+      }
+    >
+      {isPinned ? (
+        <Pin
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      ) : (
+        <Clock3
+          className="h-5 w-5"
+          strokeWidth={2.4}
+        />
+      )}
+    </span>
+  );
+}
+
 function FeaturedPortfolioProject({
   project,
 }: {
@@ -211,11 +253,14 @@ function FeaturedPortfolioProject({
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#11161D] via-transparent to-transparent" />
 
-        <span className="absolute right-5 top-5 z-20 rounded-full border border-amber-400/35 bg-[#11161D]/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-amber-300 shadow-lg shadow-black/20 backdrop-blur-md">
-          {project.isPinned
-            ? "Pinned"
-            : "Cel mai recent"}
-        </span>
+        <ProjectStatusBadge
+          type={
+            project.isPinned
+              ? "pinned"
+              : "recent"
+          }
+          className="absolute right-5 top-5 z-20"
+        />
       </div>
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col bg-[#11161D] p-5">
@@ -305,7 +350,7 @@ export default async function PortofoliuPage() {
 
   const portfolioProjects: PortfolioProject[] =
     portfolioProjectsFromSanity.map(
-      (project) => ({
+      (project, index) => ({
         _id: project._id,
         title: project.title,
 
@@ -342,6 +387,10 @@ export default async function PortofoliuPage() {
 
         isPublished:
           project.isPublished !== false,
+
+        isRecent:
+          index === 0 &&
+          project.isPinned !== true,
 
         publishedAt:
           project.publishedAt,
@@ -426,13 +475,6 @@ export default async function PortofoliuPage() {
           <div className="flex flex-col gap-4 sm:flex-row">
             <Button href="/contact">
               Vreau un demo pentru firma mea
-            </Button>
-
-            <Button
-              href="/preturi"
-              variant="secondary"
-            >
-              Vezi prețuri
             </Button>
           </div>
         }
@@ -574,33 +616,34 @@ export default async function PortofoliuPage() {
                         </p>
                       </div>
 
-                      <ReviewStars
-                        rating={
-                          featuredReview.rating
-                        }
-                      />
                     </div>
 
                     <blockquote className="mt-8 break-words text-lg font-semibold leading-8 tracking-[-0.02em] text-white [overflow-wrap:anywhere] md:text-xl md:leading-9">
                       „{reviewPreview}”
                     </blockquote>
 
-                    <div className="mt-8 flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <Link
+                      href={`/testimoniale/${encodeURIComponent(
+                        featuredReview._id,
+                      )}`}
+                      className="group/read mt-6 inline-flex w-fit items-center gap-2 text-base font-black text-amber-300 transition duration-300 hover:-translate-y-0.5 hover:text-amber-200"
+                    >
+                      Citește testimonialul
+
+                      <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover/read:translate-x-0.5 group-hover/read:-translate-y-0.5" />
+                    </Link>
+
+                    <div className="mt-6 flex flex-col gap-5 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
                       <p className="min-w-0 break-words text-sm text-gray-500 [overflow-wrap:anywhere]">
                         {featuredReview.project ||
                           "Website"}
                       </p>
 
-                      <Link
-                        href={`/testimoniale/${encodeURIComponent(
-                          featuredReview._id,
-                        )}`}
-                        className="group/read inline-flex w-fit shrink-0 items-center gap-2 text-sm font-black text-amber-300 transition duration-300 hover:text-amber-200"
-                      >
-                        Citește testimonialul
-
-                        <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover/read:translate-x-0.5 group-hover/read:-translate-y-0.5" />
-                      </Link>
+                      <ReviewStars
+                        rating={
+                          featuredReview.rating
+                        }
+                      />
                     </div>
                   </div>
                 </article>

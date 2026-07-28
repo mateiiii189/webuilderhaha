@@ -21,16 +21,17 @@ type Post = {
   seoDescription?: string;
   readingTime?: number;
   publishedAt: string;
-  postType: string;
-  coverImage?: unknown;
-  body?: unknown[];
-  category?: {
+  categories?: string[];
+  authorName?: string;
+  legacyPostType?: string;
+  legacyCategory?: {
     title?: string;
   };
-  author?: {
+  legacyAuthor?: {
     name?: string;
-    role?: string;
   };
+  coverImage?: unknown;
+  body?: unknown[];
 };
 
 type TocItem = {
@@ -42,6 +43,7 @@ type TocItem = {
 const postQuery = `
   *[
     _type == "post" &&
+    coalesce(isPublished, true) == true &&
     (
       slug.current == $slug ||
       ($id != "" && _id == $id)
@@ -54,30 +56,36 @@ const postQuery = `
     seoDescription,
     publishedAt,
     readingTime,
-    postType,
+    categories,
+    authorName,
+    "legacyPostType": postType,
+    "legacyCategory": category->{title},
+    "legacyAuthor": author->{name},
     coverImage,
-    body,
-    category->{title},
-    author->{name, role}
+    body
   }
 `;
 
 const recommendedPostsQuery = `
   *[
     _type == "post" &&
+    coalesce(isPublished, true) == true &&
     defined(slug.current) &&
-    postType == $postType &&
     slug.current != $slug
-  ] | order(_updatedAt desc)[0...3] {
+  ] | order(
+    coalesce(publishedAt, _createdAt) desc,
+    _createdAt desc,
+    _id desc
+  )[0...12] {
     _id,
     title,
     "slug": slug.current,
     excerpt,
     publishedAt,
-    _updatedAt,
-    postType,
-    coverImage,
-    category->{title}
+    categories,
+    "legacyPostType": postType,
+    "legacyCategory": category->{title},
+    coverImage
   }
 `;
 
@@ -99,20 +107,21 @@ const getPost = cache(
   },
 );
 
-const getRecommendedPosts = cache(async (postType: string, slug: string) => {
-  return client.fetch<Post[]>(
-    recommendedPostsQuery,
-    {
-      postType,
-      slug,
-    },
-    {
-      next: {
-        tags: ["posts"],
+const getRecommendedPosts = cache(
+  async (slug: string) => {
+    return client.fetch<Post[]>(
+      recommendedPostsQuery,
+      {
+        slug,
       },
-    }
-  );
-});
+      {
+        next: {
+          tags: ["posts"],
+        },
+      },
+    );
+  },
+);
 
 type PageProps = {
   params: Promise<{
@@ -134,13 +143,43 @@ function decodeRouteSegment(
   }
 }
 
-function getPostTypeLabel(type: string) {
-  if (type === "seo") return "Ghid";
-  if (type === "social") return "Social";
-  if (type === "caseStudy") return "Studiu de caz";
+function getLegacyPostTypeLabel(type?: string) {
+  if (type === "seo") return "SEO Article";
+  if (type === "social") return "Social Embed";
+  if (type === "caseStudy") return "Case Study";
   if (type === "update") return "Update";
 
-  return "Articol";
+  return "";
+}
+
+function getPostCategories(post: Post): string[] {
+  const customCategories = Array.isArray(
+    post.categories,
+  )
+    ? post.categories
+        .map((category) =>
+          category.trim(),
+        )
+        .filter(Boolean)
+    : [];
+
+  if (customCategories.length > 0) {
+    return Array.from(
+      new Set(customCategories),
+    );
+  }
+
+  return Array.from(
+    new Set(
+      [
+        getLegacyPostTypeLabel(
+          post.legacyPostType,
+        ),
+        post.legacyCategory?.title?.trim() ||
+          "",
+      ].filter(Boolean),
+    ),
+  );
 }
 
 function slugify(text: string) {
@@ -263,8 +302,28 @@ export default async function BlogPostPage({
   const body = post.body || [];
   const toc = extractToc(body as any[]);
   const articleUrl = `${siteConfig.domain}/blog/${post.slug}`;
-  const postTypeLabel = getPostTypeLabel(post.postType);
-  const recommendedPosts = await getRecommendedPosts(post.postType, post.slug);
+  const postCategories = getPostCategories(post);
+  const recommendedCandidates =
+    await getRecommendedPosts(post.slug);
+
+  const matchingRecommendedPosts =
+    recommendedCandidates.filter(
+      (recommendedPost) =>
+        getPostCategories(
+          recommendedPost,
+        ).some((category) =>
+          postCategories.includes(
+            category,
+          ),
+        ),
+    );
+
+  const recommendedPosts =
+    (
+      matchingRecommendedPosts.length > 0
+        ? matchingRecommendedPosts
+        : recommendedCandidates
+    ).slice(0, 3);
 
   return (
     <main
@@ -301,15 +360,25 @@ export default async function BlogPostPage({
               </Link>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-10 items-center rounded-full bg-amber-400 px-5 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[0_10px_30px_rgba(251,191,36,0.16)]">
-                  {postTypeLabel}
-                </span>
-
-                {post.category?.title ? (
-                  <span className="inline-flex h-10 items-center rounded-full border border-white/15 bg-white/[0.035] px-5 text-xs font-black uppercase tracking-[0.18em] text-white/90">
-                    {post.category.title}
-                  </span>
-                ) : null}
+                {postCategories
+                  .slice(0, 4)
+                  .map(
+                    (
+                      category,
+                      categoryIndex,
+                    ) => (
+                      <span
+                        key={category}
+                        className={
+                          categoryIndex === 0
+                            ? "inline-flex h-10 items-center rounded-full bg-amber-400 px-5 text-xs font-black uppercase tracking-[0.18em] text-black shadow-[0_10px_30px_rgba(251,191,36,0.16)]"
+                            : "inline-flex h-10 items-center rounded-full border border-white/15 bg-white/[0.035] px-5 text-xs font-black uppercase tracking-[0.18em] text-white/90"
+                        }
+                      >
+                        {category}
+                      </span>
+                    ),
+                  )}
               </div>
 
               <h1 className="mt-8 max-w-[980px] text-[54px] font-black leading-[0.94] tracking-[-0.075em] text-white md:text-[76px] lg:text-[88px] xl:text-[96px]">
@@ -328,7 +397,9 @@ export default async function BlogPostPage({
               </span>
 
               <span className="inline-flex items-center gap-2 font-semibold text-white">
-                {post.author?.name || "Webuilder"}
+                {post.authorName ||
+                  post.legacyAuthor?.name ||
+                  "Webuilder"}
 
                 <MdVerified className="h-5 w-5 text-amber-400" />
               </span>
@@ -429,7 +500,8 @@ export default async function BlogPostPage({
                 <p className="mt-4 max-w-2xl text-base leading-7 text-gray-400">
                   Ultimele articole publicate în aceeași categorie:{" "}
                   <span className="font-semibold text-amber-300">
-                    {postTypeLabel}
+                    {postCategories[0] ||
+                      "Articol"}
                   </span>
                   .
                 </p>
@@ -483,15 +555,32 @@ export default async function BlogPostPage({
 
                     <div className="flex flex-1 flex-col p-6">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black">
-                          {getPostTypeLabel(recommendedPost.postType)}
-                        </span>
-
-                        {recommendedPost.category?.title ? (
-                          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-gray-300">
-                            {recommendedPost.category.title}
-                          </span>
-                        ) : null}
+                        {getPostCategories(
+                          recommendedPost,
+                        )
+                          .slice(0, 3)
+                          .map(
+                            (
+                              category,
+                              categoryIndex,
+                            ) => (
+                              <span
+                                key={
+                                  category
+                                }
+                                className={
+                                  categoryIndex ===
+                                  0
+                                    ? "rounded-full bg-amber-400 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-black"
+                                    : "rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-gray-300"
+                                }
+                              >
+                                {
+                                  category
+                                }
+                              </span>
+                            ),
+                          )}
                       </div>
 
                       <h3 className="mt-5 text-2xl font-black leading-[1.02] tracking-[-0.04em] text-white transition duration-500 group-hover:text-amber-300">
